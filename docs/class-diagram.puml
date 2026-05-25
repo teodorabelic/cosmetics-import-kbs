@@ -1,0 +1,55 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class ImportRequest {
+  productName: String
+  category: Category
+  countryOfOrigin: String
+  purchasePrice: double
+  shippingCost: double
+  customsRate: double
+  vatRate: double
+  expectedSellingPrice: double
+  monthlyDemand: int
+  currentStock: int
+  minStock: int
+  shelfLifeMonths: int
+  supplierReliability: double
+}
+
+class ImportAssessment {
+  productName: String
+  landedCost: double
+  marginPercent: double
+  decision: ImportDecision
+  riskLevel: RiskLevel
+  suggestedOrderQuantity: int
+  recommendations: List<String>
+  activatedRules: List<String>
+}
+
+enum Category {
+  SKINCARE
+  MAKEUP
+  HAIRCARE
+  FRAGRANCE
+  BODYCARE
+}
+
+enum ImportDecision {
+  APPROVE
+  APPROVE_WITH_CAUTION
+  REJECT
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+ImportRequest --> Category
+ImportAssessment --> ImportDecision
+ImportAssessment --> RiskLevel
+ImportRequest ..> ImportAssessment : rules create assessment
+@enduml
