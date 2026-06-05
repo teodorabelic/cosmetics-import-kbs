@@ -1,0 +1,140 @@
+package rules
+
+import com.ftn.sbnz.model.ImportRequest;
+import com.ftn.sbnz.model.ImportAssessment;
+import com.ftn.sbnz.model.ImportDecision;
+import com.ftn.sbnz.model.RecommendationFactor;
+import com.ftn.sbnz.model.RecommendationLink;
+
+// za proizvod nadji RecommendationFactor i vidi da li vodi do ImportRecommended
+query ImportRecommended(String $productName)
+	RecommendationFactor(productName == $productName, $factorCode : code)
+	FactorLeadsToImport($productName, $factorCode, "ImportRecommended";)
+end
+
+// rekurzivni query
+// faktor vodi do cilja ako:
+query FactorLeadsToImport(String $productName, String $factorCode, String $targetCode)
+	// 1. postoji direkt veza faktor -> cilj
+	RecommendationLink(fromCode == $factorCode, toCode == $targetCode)
+	RecommendationFactor(productName == $productName, code == $targetCode)
+	or
+	// 2. postoji veza faktor -> sledeci faktor -> ... -> cilj
+	( RecommendationLink(fromCode == $factorCode, $nextCode : toCode)
+		and RecommendationFactor(productName == $productName, code == $nextCode)
+		and FactorLeadsToImport($productName, $nextCode, $targetCode;) )
+end
+
+// pocetni faktori ---------------------------------------------------------------
+
+rule "Faktor visoka potraznja"
+	salience 92
+	no-loop true
+when
+	$request : ImportRequest($productName : productName)
+	eval($request.getEffectiveDemandScore() >= 7)
+	not RecommendationFactor(productName == $productName, code == "HighDemand")
+then
+	insert(new RecommendationFactor($productName, "HighDemand"));
+end
+
+rule "Faktor prihvatljiv ukupni trosak"
+	salience 92
+	no-loop true
+when
+	$assessment : ImportAssessment($productName : productName, marginPercent >= 25)
+	not RecommendationFactor(productName == $productName, code == "AcceptableTotalCost")
+then
+	insert(new RecommendationFactor($productName, "AcceptableTotalCost"));
+end
+
+rule "Faktor konkurentna D2C cena"
+	salience 92
+	no-loop true
+when
+	$request : ImportRequest($productName : productName, competitorMaxPrice > 0)
+	ImportAssessment(productName == $productName, recommendedD2CPrice <= $request.getCompetitorMaxPrice())
+	not RecommendationFactor(productName == $productName, code == "CompetitiveD2CPrice")
+then
+	insert(new RecommendationFactor($productName, "CompetitiveD2CPrice"));
+end
+
+rule "Faktor pozitivan ocekivani profit"
+	salience 92
+	no-loop true
+when
+	$assessment : ImportAssessment($productName : productName, expectedProfit > 0)
+	not RecommendationFactor(productName == $productName, code == "PositiveExpectedProfit")
+then
+	insert(new RecommendationFactor($productName, "PositiveExpectedProfit"));
+end
+
+// medjufaktori -----------------------------------------------------------------------
+
+rule "Izvedi potencijal potraznje"
+	salience 91
+	no-loop true
+when
+	// ako postoji HighDemand i postoji veza ka DemandPotential - ubaci ga
+	RecommendationFactor($productName : productName, code == "HighDemand")
+	RecommendationLink(fromCode == "HighDemand", toCode == "DemandPotential")
+	not RecommendationFactor(productName == $productName, code == "DemandPotential")
+then
+	insert(new RecommendationFactor($productName, "DemandPotential"));
+end
+
+rule "Izvedi prihvatljiv trosak"
+	salience 91
+	no-loop true
+when
+	RecommendationFactor($productName : productName, code == "AcceptableTotalCost")
+	RecommendationLink(fromCode == "AcceptableTotalCost", toCode == "CostAcceptable")
+	not RecommendationFactor(productName == $productName, code == "CostAcceptable")
+then
+	insert(new RecommendationFactor($productName, "CostAcceptable"));
+end
+
+rule "Izvedi sansu za uvoz iz kompletnih faktora"
+	salience 91
+	no-loop true
+when
+	RecommendationFactor($productName : productName, code == "DemandPotential")
+	RecommendationFactor(productName == $productName, code == "CostAcceptable")
+	RecommendationFactor(productName == $productName, code == "CompetitiveD2CPrice")
+	RecommendationFactor(productName == $productName, code == "PositiveExpectedProfit")
+	RecommendationLink(fromCode == "DemandPotential", toCode == "ImportOpportunity")
+	RecommendationLink(fromCode == "CostAcceptable", toCode == "ImportOpportunity")
+	RecommendationLink(fromCode == "CompetitiveD2CPrice", toCode == "ImportOpportunity")
+	RecommendationLink(fromCode == "PositiveExpectedProfit", toCode == "ImportOpportunity")
+	not RecommendationFactor(productName == $productName, code == "ImportOpportunity")
+then
+	insert(new RecommendationFactor($productName, "ImportOpportunity"));
+end
+
+rule "Izvedi preporuku za uvoz"
+	salience 90
+	no-loop true
+when
+	RecommendationFactor($productName : productName, code == "ImportOpportunity")
+	ImportAssessment(productName == $productName, decision != ImportDecision.REJECT)
+	RecommendationLink(fromCode == "ImportOpportunity", toCode == "ImportRecommended")
+	not RecommendationFactor(productName == $productName, code == "ImportRecommended")
+then
+	insert(new RecommendationFactor($productName, "ImportRecommended"));
+end
+
+// celokupna poruka kada je preporucen uvoz
+rule "Objasni lanac preporuke za uvoz"
+	salience 88
+	no-loop true
+when
+	RecommendationFactor($productName : productName, code == "ImportRecommended")
+	$assessment : ImportAssessment(productName == $productName,
+		decision != ImportDecision.REJECT,
+		!hasRecommendation("Backward query ImportRecommended je potvrden kroz lanac faktora."))
+then
+	modify($assessment) {
+		addRecommendation("Backward query ImportRecommended je potvrden kroz lanac faktora."),
+		addActivatedRule(drools.getRule().getName())
+	}
+end

@@ -1,81 +1,22 @@
 package rules
 
-import com.ftn.sbnz.model.ImportRequest;
-import com.ftn.sbnz.model.ImportAssessment;
-import com.ftn.sbnz.model.ImportDecision;
-import com.ftn.sbnz.model.RiskLevel;
+import com.ftn.sbnz.model.SalesEvent;
+import com.ftn.sbnz.model.ShipmentReceivedEvent;
+import com.ftn.sbnz.model.StockChangeEvent;
 
-rule "Izracunavanje ukupne uvozne cene"
-	salience 100
-	no-loop true
-when
-	$request : ImportRequest()
-	$assessment : ImportAssessment(landedCost == 0)
-then
-	double landedCost = $request.calculateLandedCost();
-	$assessment.setProductName($request.getProductName());
-	$assessment.setLandedCost(landedCost);
-	$assessment.setMarginPercent($request.calculateMarginPercent(landedCost));
-	$assessment.addActivatedRule(drools.getRule().getName());
-	update($assessment);
+// events
+
+// prodaja
+declare SalesEvent
+	@role(event)
 end
 
-rule "Odobri veoma isplativ uvoz"
-	salience 80
-	no-loop true
-when
-	$request : ImportRequest(monthlyDemand >= 80, supplierReliability >= 0.8)
-	$assessment : ImportAssessment(marginPercent >= 35, decision == null)
-then
-	$assessment.setDecision(ImportDecision.APPROVE);
-	$assessment.setRiskLevel(RiskLevel.LOW);
-	$assessment.setSuggestedOrderQuantity($request.calculateDefaultOrderQuantity());
-	$assessment.addRecommendation("Uvoz je isplativ: visoka marza, dobra traznja i pouzdan dobavljac.");
-	$assessment.addActivatedRule(drools.getRule().getName());
-	update($assessment);
+// primljena isporuka 
+declare ShipmentReceivedEvent
+	@role(event)
 end
 
-rule "Oprez za granicno isplativ uvoz"
-	salience 70
-	no-loop true
-when
-	$request : ImportRequest(supplierReliability >= 0.6)
-	$assessment : ImportAssessment(marginPercent >= 15, marginPercent < 35, decision == null)
-then
-	$assessment.setDecision(ImportDecision.APPROVE_WITH_CAUTION);
-	$assessment.setRiskLevel(RiskLevel.MEDIUM);
-	$assessment.setSuggestedOrderQuantity($request.calculateDefaultOrderQuantity());
-	$assessment.addRecommendation("Uvoz je moguc, ali je marza ogranicena pa treba pregovarati cenu ili kolicinu.");
-	$assessment.addActivatedRule(drools.getRule().getName());
-	update($assessment);
-end
-
-rule "Odbij neisplativ ili nepouzdan uvoz"
-	salience 90
-	no-loop true
-when
-	$request : ImportRequest()
-	$assessment : ImportAssessment(landedCost > 0, decision == null)
-	eval($assessment.getMarginPercent() < 15 || $request.getSupplierReliability() < 0.6 || $request.getExpectedSellingPrice() <= 0)
-then
-	$assessment.setDecision(ImportDecision.REJECT);
-	$assessment.setRiskLevel(RiskLevel.HIGH);
-	$assessment.setSuggestedOrderQuantity(0);
-	$assessment.addRecommendation("Uvoz nije preporucen zbog niske marze ili rizicnog dobavljaca.");
-	$assessment.addActivatedRule(drools.getRule().getName());
-	update($assessment);
-end
-
-rule "Povecaj kolicinu kada su zalihe kriticne"
-	salience 60
-	no-loop true
-when
-	$request : ImportRequest(currentStock < minStock)
-	$assessment : ImportAssessment(decision != ImportDecision.REJECT,
-		!hasRecommendation("Zalihe su ispod minimuma: predlozena je veca narudzbina."))
-then
-	$assessment.setSuggestedOrderQuantity($request.calculateUrgentOrderQuantity());
-	$assessment.addRecommendation("Zalihe su ispod minimuma: predlozena je veca narudzbina.");
-	$assessment.addActivatedRule(drools.getRule().getName());
-	update($assessment);
+// promena zaliha 
+declare StockChangeEvent
+	@role(event)
 end

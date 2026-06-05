@@ -1,0 +1,145 @@
+package rules
+
+import com.ftn.sbnz.model.ImportRequest;
+import com.ftn.sbnz.model.ImportAssessment;
+import com.ftn.sbnz.model.ImportDecision;
+import com.ftn.sbnz.model.SalesRecord;
+import com.ftn.sbnz.model.SalesTrend;
+
+rule "Izracunaj prosecnu prodaju za 7 i 30 dana"
+	salience 105
+	no-loop true
+when
+	$request : ImportRequest($productName : productName)
+	exists SalesRecord(productName == $productName)
+	$avg7 : Number() from accumulate(
+		SalesRecord(productName == $productName, daysAgo <= 7, $quantity7 : quantity),
+		average($quantity7)
+	)
+	$avg30 : Number() from accumulate(
+		SalesRecord(productName == $productName, daysAgo <= 30, $quantity30 : quantity),
+		average($quantity30)
+	)
+	$assessment : ImportAssessment(productName == $productName, averageDailySales30 == 0)
+then
+	double avg7 = $avg7.doubleValue();
+	double avg30 = $avg30.doubleValue();
+	double remainingDays = avg7 > 0 ? $request.getCurrentStock() / avg7 : 0;
+	modify($assessment) {
+		setAverageDailySales7(avg7),
+		setAverageDailySales30(avg30),
+		setRemainingStockDays(remainingDays),
+		addActivatedRule(drools.getRule().getName())
+	}
+end
+
+rule "Oznaci visoku prosecnu prodaju"
+	salience 104
+	no-loop true
+when
+	$assessment : ImportAssessment(averageDailySales7 > 5,
+		!hasRecommendation("Prosecna dnevna prodaja je visoka."))
+then
+	modify($assessment) {
+		addRecommendation("Prosecna dnevna prodaja je visoka."),
+		addActivatedRule(drools.getRule().getName())
+	}
+end
+
+rule "Oznaci nisku prosecnu prodaju"
+	salience 104
+	no-loop true
+when
+	$assessment : ImportAssessment(averageDailySales30 > 0, averageDailySales7 < 2,
+		!hasRecommendation("Prosecna dnevna prodaja je niska."))
+then
+	modify($assessment) {
+		addRecommendation("Prosecna dnevna prodaja je niska."),
+		addActivatedRule(drools.getRule().getName())
+	}
+end
+
+rule "Detektuj rastuci trend prodaje"
+	salience 103
+	no-loop true
+when
+	$assessment : ImportAssessment(averageDailySales30 > 0,
+		averageDailySales7 >= averageDailySales30 * 1.3, salesTrend == null)
+then
+	modify($assessment) {
+		setSalesTrend(SalesTrend.GROWING),
+		addRecommendation("Prodaja u poslednjih 7 dana je znacajno veca od proseka za 30 dana."),
+		addActivatedRule(drools.getRule().getName())
+	}
+end
+
+rule "Detektuj opadajuci trend prodaje"
+	salience 103
+	no-loop true
+when
+	$assessment : ImportAssessment(averageDailySales30 > 0,
+		averageDailySales7 <= averageDailySales30 * 0.7, salesTrend == null)
+then
+	modify($assessment) {
+		setSalesTrend(SalesTrend.DECLINING),
+		addRecommendation("Prodaja u poslednjih 7 dana je znacajno manja od proseka za 30 dana."),
+		addActivatedRule(drools.getRule().getName())
+	}
+end
+
+rule "Detektuj stabilan trend prodaje"
+	salience 102
+	no-loop true
+when
+	$assessment : ImportAssessment(averageDailySales30 > 0, salesTrend == null)
+then
+	modify($assessment) {
+		setSalesTrend(SalesTrend.STABLE),
+		addActivatedRule(drools.getRule().getName())
+	}
+end
+
+rule "Upozori na manje od 7 dana zaliha"
+	salience 101
+	no-loop true
+when
+	$assessment : ImportAssessment(remainingStockDays > 0, remainingStockDays < 7,
+		!hasRecommendation("Preostalo je manje od 7 dana zaliha."))
+then
+	modify($assessment) {
+		addRecommendation("Preostalo je manje od 7 dana zaliha."),
+		addActivatedRule(drools.getRule().getName())
+	}
+end
+
+rule "Ranije narucivanje za rastuci trend i niske zalihe"
+	salience 67
+	no-loop true
+when
+	$request : ImportRequest($productName : productName, currentStock < minStock)
+	$assessment : ImportAssessment(productName == $productName, salesTrend == SalesTrend.GROWING,
+		decision != ImportDecision.REJECT,
+		!hasRecommendation("Rastuci trend i niske zalihe zahtevaju ranije narucivanje."))
+then
+	modify($assessment) {
+		setSuggestedOrderQuantity($request.calculateUrgentOrderQuantity()),
+		addRecommendation("Rastuci trend i niske zalihe zahtevaju ranije narucivanje."),
+		addActivatedRule(drools.getRule().getName())
+	}
+end
+
+rule "Smanji narudzbinu za opadajuci trend i visoke zalihe"
+	salience 67
+	no-loop true
+when
+	$request : ImportRequest($productName : productName, currentStock > minStock)
+	$assessment : ImportAssessment(productName == $productName, salesTrend == SalesTrend.DECLINING,
+		decision != ImportDecision.REJECT,
+		!hasRecommendation("Opadajuci trend i visoke zalihe ukazuju da narednu narudzbinu treba smanjiti."))
+then
+	modify($assessment) {
+		setSuggestedOrderQuantity(0),
+		addRecommendation("Opadajuci trend i visoke zalihe ukazuju da narednu narudzbinu treba smanjiti."),
+		addActivatedRule(drools.getRule().getName())
+	}
+end

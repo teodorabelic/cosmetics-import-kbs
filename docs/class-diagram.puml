@@ -4,23 +4,37 @@ skinparam classAttributeIconSize 0
 class ImportRequest {
   productName: String
   category: Category
+  productType: ProductType
   countryOfOrigin: String
   purchasePrice: double
   shippingCost: double
   customsRate: double
   vatRate: double
   expectedSellingPrice: double
+  competitorMinPrice: double
+  competitorMaxPrice: double
   monthlyDemand: int
   currentStock: int
   minStock: int
   shelfLifeMonths: int
   supplierReliability: double
+  salesHistory: List<SalesRecord>
+  salesEvents: List<SalesEvent>
+  stockEvents: List<StockChangeEvent>
+  shipmentEvents: List<ShipmentReceivedEvent>
 }
 
 class ImportAssessment {
   productName: String
   landedCost: double
   marginPercent: double
+  recommendedB2BPrice: double
+  recommendedD2CPrice: double
+  expectedProfit: double
+  averageDailySales7: double
+  averageDailySales30: double
+  remainingStockDays: double
+  salesTrend: SalesTrend
   decision: ImportDecision
   riskLevel: RiskLevel
   suggestedOrderQuantity: int
@@ -36,6 +50,20 @@ enum Category {
   BODYCARE
 }
 
+enum ProductType {
+  LUXURY
+  MASS
+  PROFESSIONAL
+  TREND
+  STANDARD
+}
+
+enum SalesTrend {
+  GROWING
+  STABLE
+  DECLINING
+}
+
 enum ImportDecision {
   APPROVE
   APPROVE_WITH_CAUTION
@@ -48,8 +76,68 @@ enum RiskLevel {
   HIGH
 }
 
+class SalesRecord {
+  productName: String
+  daysAgo: int
+  quantity: int
+}
+
+class StockChangeEvent {
+  productName: String
+  minutesAgo: int
+  quantityBefore: int
+  quantityAfter: int
+}
+
+class SalesEvent {
+  productName: String
+  minutesAgo: int
+  quantity: int
+}
+
+class ShipmentReceivedEvent {
+  productName: String
+  minutesAgo: int
+  quantity: int
+}
+
+class ProductPolicy {
+  productType: ProductType
+  minStockThreshold: int
+  orderMultiplier: double
+}
+
+class RecommendationFactor {
+  productName: String
+  code: String
+}
+
+class RecommendationLink {
+  fromCode: String
+  toCode: String
+}
+
+class ImportAssessmentExplanation {
+  decision: ImportDecision
+  riskLevel: RiskLevel
+  mainReason: String
+  importRecommended: boolean
+  factors: List<String>
+  activatedRules: List<String>
+  recommendations: List<String>
+}
+
 ImportRequest --> Category
+ImportRequest --> ProductType
+ImportRequest --> SalesRecord
+ImportRequest --> SalesEvent
+ImportRequest --> StockChangeEvent
+ImportRequest --> ShipmentReceivedEvent
 ImportAssessment --> ImportDecision
 ImportAssessment --> RiskLevel
+ImportAssessment --> SalesTrend
+ImportAssessmentExplanation --> ImportDecision
+ImportAssessmentExplanation --> RiskLevel
+ProductPolicy --> ProductType
 ImportRequest ..> ImportAssessment : rules create assessment
 @enduml

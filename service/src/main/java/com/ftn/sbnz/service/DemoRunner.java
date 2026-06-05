@@ -21,6 +21,13 @@ public class DemoRunner implements CommandLineRunner {
 		System.out.println("Proizvod: " + assessment.getProductName());
 		System.out.println("Ukupna uvozna cena: " + assessment.getLandedCost());
 		System.out.println("Marza: " + assessment.getMarginPercent() + "%");
+		System.out.println("Preporucena B2B cena: " + assessment.getRecommendedB2BPrice());
+		System.out.println("Preporucena D2C cena: " + assessment.getRecommendedD2CPrice());
+		System.out.println("Ocekivani profit: " + assessment.getExpectedProfit());
+		System.out.println("Prosecna prodaja 7 dana: " + assessment.getAverageDailySales7());
+		System.out.println("Prosecna prodaja 30 dana: " + assessment.getAverageDailySales30());
+		System.out.println("Preostali dani zaliha: " + assessment.getRemainingStockDays());
+		System.out.println("Trend prodaje: " + assessment.getSalesTrend());
 		System.out.println("Odluka: " + assessment.getDecision());
 		System.out.println("Rizik: " + assessment.getRiskLevel());
 		System.out.println("Predlozena kolicina: " + assessment.getSuggestedOrderQuantity());

@@ -8,6 +8,13 @@ public class ImportAssessment {
 	private String productName;
 	private double landedCost;
 	private double marginPercent;
+	private double recommendedB2BPrice;
+	private double recommendedD2CPrice;
+	private double expectedProfit;
+	private double averageDailySales7;
+	private double averageDailySales30;
+	private double remainingStockDays;
+	private SalesTrend salesTrend;
 	private ImportDecision decision;
 	private RiskLevel riskLevel;
 	private int suggestedOrderQuantity;
@@ -59,6 +66,62 @@ public class ImportAssessment {
 
 	public void setMarginPercent(double marginPercent) {
 		this.marginPercent = round(marginPercent);
+	}
+
+	public double getRecommendedB2BPrice() {
+		return recommendedB2BPrice;
+	}
+
+	public void setRecommendedB2BPrice(double recommendedB2BPrice) {
+		this.recommendedB2BPrice = round(recommendedB2BPrice);
+	}
+
+	public double getRecommendedD2CPrice() {
+		return recommendedD2CPrice;
+	}
+
+	public void setRecommendedD2CPrice(double recommendedD2CPrice) {
+		this.recommendedD2CPrice = round(recommendedD2CPrice);
+	}
+
+	public double getExpectedProfit() {
+		return expectedProfit;
+	}
+
+	public void setExpectedProfit(double expectedProfit) {
+		this.expectedProfit = round(expectedProfit);
+	}
+
+	public double getAverageDailySales7() {
+		return averageDailySales7;
+	}
+
+	public void setAverageDailySales7(double averageDailySales7) {
+		this.averageDailySales7 = round(averageDailySales7);
+	}
+
+	public double getAverageDailySales30() {
+		return averageDailySales30;
+	}
+
+	public void setAverageDailySales30(double averageDailySales30) {
+		this.averageDailySales30 = round(averageDailySales30);
+	}
+
+	public double getRemainingStockDays() {
+		return remainingStockDays;
+	}
+
+	public void setRemainingStockDays(double remainingStockDays) {
+		this.remainingStockDays = round(remainingStockDays);
+	}
+
+	public SalesTrend getSalesTrend() {
+		return salesTrend;
+	}
+
+	public void setSalesTrend(SalesTrend salesTrend) {
+		this.salesTrend = salesTrend;
 	}
 
 	public ImportDecision getDecision() {
