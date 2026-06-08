@@ -5,9 +5,9 @@ import com.ftn.sbnz.model.ImportAssessment;
 import com.ftn.sbnz.model.ImportDecision;
 import com.ftn.sbnz.model.RiskLevel;
 
-// inicijalni obracuni ---------------------------------------------
+// inicijalni obračuni ---------------------------------------------
 
-rule "Izracunavanje ukupne uvozne cene"
+rule "Izračunavanje ukupne uvozne cene"
 	salience 120
 	no-loop true
 when
@@ -23,7 +23,7 @@ then
 	}
 end
 
-rule "Formiranje preporucenih B2B i D2C cena"
+rule "Formiranje preporučenih B2B i D2C cena"
 	salience 110
 	no-loop true
 when
@@ -36,7 +36,7 @@ then
 		setRecommendedB2BPrice(b2bPrice),
 		setRecommendedD2CPrice(d2cPrice),
 		setExpectedProfit($request.calculateExpectedProfit($assessment.getLandedCost())),
-		addRecommendation("Preporucene cene su formirane primenom B2B marze od 30% i D2C marze od 45%."),
+		addRecommendation("Preporučene cene su formirane primenom B2B marže od 30% i D2C marže od 45%."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
@@ -47,10 +47,10 @@ rule "Objasni carinu za EU poreklo"
 when
 	$request : ImportRequest(countryOfOrigin != null, customsRate > 0)
 	eval($request.isEuOrigin())
-	$assessment : ImportAssessment(!hasRecommendation("Poreklo proizvoda je u EU, pa carina nije uracunata u ukupni trosak."))
+	$assessment : ImportAssessment(!hasRecommendation("Poreklo proizvoda je u EU, pa carina nije uračunata u ukupni trošak."))
 then
 	modify($assessment) {
-		addRecommendation("Poreklo proizvoda je u EU, pa carina nije uracunata u ukupni trosak."),
+		addRecommendation("Poreklo proizvoda je u EU, pa carina nije uračunata u ukupni trošak."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
@@ -61,39 +61,39 @@ rule "Objasni carinu za poreklo van EU"
 when
 	$request : ImportRequest(countryOfOrigin != null, customsRate > 0)
 	eval(!$request.isEuOrigin())
-	$assessment : ImportAssessment(!hasRecommendation("Poreklo proizvoda je van EU, pa je carina uracunata u ukupni trosak."))
+	$assessment : ImportAssessment(!hasRecommendation("Poreklo proizvoda je van EU, pa je carina uračunata u ukupni trošak."))
 then
 	modify($assessment) {
-		addRecommendation("Poreklo proizvoda je van EU, pa je carina uracunata u ukupni trosak."),
+		addRecommendation("Poreklo proizvoda je van EU, pa je carina uračunata u ukupni trošak."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
 
-rule "Upozori na transport van ocekivanog procenta"
+rule "Upozori na transport van očekivanog procenta"
 	salience 98
 	no-loop true
 when
 	ImportRequest(transportRate > 0, (transportRate < 0.05 || transportRate > 0.07))
-	$assessment : ImportAssessment(!hasRecommendation("Transport nije u ocekivanom opsegu 5-7%, pa treba proveriti kalkulaciju troskova."))
+	$assessment : ImportAssessment(!hasRecommendation("Transport nije u očekivanom opsegu 5-7%, pa treba proveriti kalkulaciju troškova."))
 then
 	modify($assessment) {
-		addRecommendation("Transport nije u ocekivanom opsegu 5-7%, pa treba proveriti kalkulaciju troskova."),
+		addRecommendation("Transport nije u očekivanom opsegu 5-7%, pa treba proveriti kalkulaciju troškova."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
 
 // provera rizika i konkurentnosti -----------------------------------------
 
-rule "Oznaci povoljnu cenu u odnosu na konkurenciju"
+rule "Označi povoljnu cenu u odnosu na konkurenciju"
 	salience 95
 	no-loop true
 when
 	$request : ImportRequest(competitorMinPrice > 0)
 	$assessment : ImportAssessment(recommendedD2CPrice > 0, recommendedD2CPrice < $request.getCompetitorMinPrice(),
-		!hasRecommendation("Preporucena D2C cena je ispod minimalne konkurentske cene."))
+		!hasRecommendation("Preporučena D2C cena je ispod minimalne konkurentske cene."))
 then
 	modify($assessment) {
-		addRecommendation("Preporucena D2C cena je ispod minimalne konkurentske cene."),
+		addRecommendation("Preporučena D2C cena je ispod minimalne konkurentske cene."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
@@ -109,7 +109,7 @@ then
 		setDecision(ImportDecision.REJECT),
 		setRiskLevel(RiskLevel.HIGH),
 		setSuggestedOrderQuantity(0),
-		addRecommendation("Preporucena D2C cena je iznad maksimalne konkurentske cene, proizvod nije konkurentan."),
+		addRecommendation("Preporučena D2C cena je iznad maksimalne konkurentske cene, proizvod nije konkurentan."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
@@ -126,12 +126,12 @@ then
 		setDecision(ImportDecision.APPROVE_WITH_CAUTION),
 		setRiskLevel(RiskLevel.HIGH),
 		setSuggestedOrderQuantity($request.calculateDefaultOrderQuantity()),
-		addRecommendation("Planirana prodajna cena je iznad maksimalne konkurentske cene, pa je uvoz rizican dok se cena ne uskladi sa trzistem."),
+		addRecommendation("Planirana prodajna cena je iznad maksimalne konkurentske cene, pa je uvoz rizičan dok se cena ne uskladi sa tržištem."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
 
-rule "Povecaj rizik zbog visokog ukupnog troska"
+rule "Povećaj rizik zbog visokog ukupnog troška"
 	salience 93
 	no-loop true
 when
@@ -140,7 +140,7 @@ when
 then
 	modify($assessment) {
 		setRiskLevel(RiskLevel.MEDIUM),
-		addRecommendation("Ukupni trosak je visok u odnosu na prodajnu cenu, pa je rizik povecan."),
+		addRecommendation("Ukupni trošak je visok u odnosu na prodajnu cenu, pa je rizik povećan."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
@@ -160,12 +160,12 @@ then
 		setDecision(ImportDecision.APPROVE),
 		setRiskLevel(RiskLevel.LOW),
 		setSuggestedOrderQuantity($request.calculateDefaultOrderQuantity()),
-		addRecommendation("Uvoz je isplativ: visoka marza, dobra traznja i pouzdan dobavljac."),
+		addRecommendation("Uvoz je isplativ: visoka marža, dobra tražnja i pouzdan dobavljač."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
 
-rule "Odobri konkurentan proizvod sa visokom potraznjom"
+rule "Odobri konkurentan proizvod sa visokom potražnjom"
 	salience 79
 	no-loop true
 when
@@ -179,14 +179,14 @@ then
 		setDecision(ImportDecision.APPROVE),
 		setRiskLevel(RiskLevel.LOW),
 		setSuggestedOrderQuantity($request.calculateDefaultOrderQuantity()),
-		addRecommendation("Proizvod je konkurentan, potraznja je visoka i ocekuje se pozitivan profit."),
+		addRecommendation("Proizvod je konkurentan, potražnja je visoka i očekuje se pozitivan profit."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
 
 // caution pravilo ---------------------------------------------------------------
 
-rule "Oprez za granicno isplativ uvoz"
+rule "Oprez za granično isplativ uvoz"
 	salience 70
 	no-loop true
 when
@@ -197,7 +197,7 @@ then
 		setDecision(ImportDecision.APPROVE_WITH_CAUTION),
 		setRiskLevel(RiskLevel.MEDIUM),
 		setSuggestedOrderQuantity($request.calculateDefaultOrderQuantity()),
-		addRecommendation("Uvoz je moguc, ali je marza ogranicena pa treba pregovarati cenu ili kolicinu."),
+		addRecommendation("Uvoz je moguć, ali je marža ograničena pa treba pregovarati cenu ili količinu."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
@@ -216,12 +216,12 @@ then
 		setDecision(ImportDecision.REJECT),
 		setRiskLevel(RiskLevel.HIGH),
 		setSuggestedOrderQuantity(0),
-		addRecommendation("Uvoz nije preporucen jer prodajna cena nije validna."),
+		addRecommendation("Uvoz nije preporučen jer prodajna cena nije validna."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
 
-rule "Odbij proizvod sa veoma niskom potraznjom"
+rule "Odbij proizvod sa veoma niskom potražnjom"
 	salience 89
 	no-loop true
 when
@@ -233,12 +233,12 @@ then
 		setDecision(ImportDecision.REJECT),
 		setRiskLevel(RiskLevel.HIGH),
 		setSuggestedOrderQuantity(0),
-		addRecommendation("Potraznja je veoma niska, pa uvoz nije preporucen bez obzira na ocekivani profit."),
+		addRecommendation("Potražnja je veoma niska, pa uvoz nije preporučen bez obzira na očekivani profit."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
 
-rule "Odbij uvoz zbog niske marze"
+rule "Odbij uvoz zbog niske marže"
 	salience 90
 	no-loop true
 when
@@ -249,12 +249,12 @@ then
 		setDecision(ImportDecision.REJECT),
 		setRiskLevel(RiskLevel.HIGH),
 		setSuggestedOrderQuantity(0),
-		addRecommendation("Uvoz nije preporucen zbog niske marze."),
+		addRecommendation("Uvoz nije preporučen zbog niske marže."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
 
-rule "Odbij uvoz zbog nepouzdanog dobavljaca"
+rule "Odbij uvoz zbog nepouzdanog dobavljača"
 	salience 90
 	no-loop true
 when
@@ -265,12 +265,12 @@ then
 		setDecision(ImportDecision.REJECT),
 		setRiskLevel(RiskLevel.HIGH),
 		setSuggestedOrderQuantity(0),
-		addRecommendation("Uvoz nije preporucen zbog rizicnog dobavljaca."),
+		addRecommendation("Uvoz nije preporučen zbog rizičnog dobavljača."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
 
-rule "Povecaj rizik zbog dugog vremena isporuke"
+rule "Povećaj rizik zbog dugog vremena isporuke"
 	salience 69
 	no-loop true
 when
@@ -285,7 +285,7 @@ then
 	}
 end
 
-// pravila vezana za zalihe i kolicine
+// pravila vezana za zalihe i količine
 
 rule "Upozorenje za niske zalihe"
 	salience 65
@@ -300,62 +300,64 @@ then
 	}
 end
 
-rule "Hitno upozorenje za kriticne zalihe"
+rule "Hitno upozorenje za kritične zalihe"
 	salience 66
 	no-loop true
 when
 	ImportRequest(currentStock < 5)
-	$assessment : ImportAssessment(!hasRecommendation("Zalihe su kriticne: potrebno je hitno narucivanje."))
+	$assessment : ImportAssessment(!hasRecommendation("Zalihe su kritične: potrebno je hitno naručivanje."))
 then
 	modify($assessment) {
-		addRecommendation("Zalihe su kriticne: potrebno je hitno narucivanje."),
+		addRecommendation("Zalihe su kritične: potrebno je hitno naručivanje."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
 
-rule "Povecaj kolicinu kada su zalihe kriticne"
+rule "Povećaj količinu kada su zalihe kritične"
 	salience 60
 	no-loop true
 when
 	$request : ImportRequest(currentStock < minStock)
 	$assessment : ImportAssessment(decision != ImportDecision.REJECT,
-		!hasRecommendation("Zalihe su ispod minimuma: predlozena je veca narudzbina."))
+		!hasRecommendation("Zalihe su ispod minimuma: predložena je veća narudžbina."))
 then
 	modify($assessment) {
 		setSuggestedOrderQuantity($request.calculateUrgentOrderQuantity()),
-		addRecommendation("Zalihe su ispod minimuma: predlozena je veca narudzbina."),
+		addRecommendation("Zalihe su ispod minimuma: predložena je veća narudžbina."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
 
-rule "Smanji narudzbinu kada je prodaja niska a zalihe visoke"
+rule "Smanji narudžbinu kada je prodaja niska a zalihe visoke"
 	salience 55
 	no-loop true
 when
 	$request : ImportRequest(currentStock > minStock)
 	eval($request.getEffectiveDemandScore() <= 2)
 	$assessment : ImportAssessment(decision != ImportDecision.REJECT,
-		!hasRecommendation("Prodaja je niska, a zalihe visoke: narednu narudzbinu treba smanjiti."))
+		!hasRecommendation("Prodaja je niska, a zalihe visoke: narednu narudžbinu treba smanjiti."))
 then
 	modify($assessment) {
 		setSuggestedOrderQuantity(0),
-		addRecommendation("Prodaja je niska, a zalihe visoke: narednu narudzbinu treba smanjiti."),
+		addRecommendation("Prodaja je niska, a zalihe visoke: narednu narudžbinu treba smanjiti."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
 
-rule "Povecaj narudzbinu za isplativ proizvod sa visokom potraznjom"
+rule "Povećaj narudžbinu za isplativ proizvod sa visokom potražnjom"
 	salience 54
 	no-loop true
 when
 	$request : ImportRequest()
 	eval($request.getEffectiveDemandScore() >= 8)
 	$assessment : ImportAssessment(decision == ImportDecision.APPROVE,
-		!hasRecommendation("Proizvod je isplativ i potraznja je visoka: predlozena je veca narudzbina."))
+		!hasRecommendation("Proizvod je isplativ i potražnja je visoka: predložena je veća narudžbina."))
 then
 	modify($assessment) {
 		setSuggestedOrderQuantity($request.calculateUrgentOrderQuantity()),
-		addRecommendation("Proizvod je isplativ i potraznja je visoka: predlozena je veca narudzbina."),
+		addRecommendation("Proizvod je isplativ i potražnja je visoka: predložena je veća narudžbina."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
+
+

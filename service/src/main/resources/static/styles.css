@@ -1,15 +1,15 @@
 :root {
-	--bg: #f5f7f6;
+	--bg: #fff3f8;
 	--panel: #ffffff;
-	--ink: #1f2a2d;
-	--muted: #68777a;
-	--line: #dfe7e3;
-	--green: #1f7a5c;
-	--green-soft: #e4f4ed;
-	--coral: #c95c45;
-	--coral-soft: #f8e8e3;
-	--gold: #a8752a;
-	--shadow: 0 18px 42px rgba(31, 42, 45, 0.1);
+	--ink: #211721;
+	--muted: #7a6672;
+	--line: #f1cfe0;
+	--green: #e22f87;
+	--green-soft: #ffe0ef;
+	--coral: #c84b6b;
+	--coral-soft: #ffe5eb;
+	--gold: #a86f22;
+	--shadow: 0 18px 44px rgba(157, 55, 105, 0.13);
 }
 
 * {
@@ -18,9 +18,11 @@
 
 body {
 	margin: 0;
-	background: var(--bg);
+	background:
+		radial-gradient(circle at 50% 0%, rgba(255, 216, 235, 0.95), transparent 42%),
+		linear-gradient(135deg, #fff9fc 0%, #ffe8f2 48%, #fffafd 100%);
 	color: var(--ink);
-	font-family: Arial, Helvetica, sans-serif;
+	font-family: "Work Sans", sans-serif;
 }
 
 .topbar {
@@ -31,7 +33,7 @@ body {
 	gap: 16px;
 	padding: 18px 28px;
 	border-bottom: 1px solid var(--line);
-	background: rgba(255, 255, 255, 0.88);
+	background: rgba(255, 249, 252, 0.9);
 	position: sticky;
 	top: 0;
 	z-index: 5;
@@ -72,11 +74,13 @@ h2 {
 }
 
 h1 {
-	font-size: 26px;
+	font-size: 27px;
+	font-weight: 800;
 }
 
 h2 {
 	font-size: 16px;
+	font-weight: 700;
 }
 
 .status-pill {
@@ -124,8 +128,10 @@ h2 {
 }
 
 .hero-strip {
-	height: 180px;
-	background-image: linear-gradient(90deg, rgba(31, 42, 45, 0.1), rgba(255, 255, 255, 0.6)), url("/assets/cosmetics-dashboard.png");
+	height: 230px;
+	background-image:
+		linear-gradient(90deg, rgba(255, 255, 255, 0.08), rgba(255, 235, 245, 0.12)),
+		url("/assets/cosmetics-hero-pink.png");
 	background-size: cover;
 	background-position: center;
 	border-bottom: 1px solid var(--line);
@@ -152,11 +158,12 @@ button {
 	font-weight: 700;
 	cursor: pointer;
 	border-radius: 6px;
-	transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+	transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 
 button:hover {
 	border-color: var(--green);
+	transform: translateY(-1px);
 }
 
 #runButton {
@@ -187,7 +194,7 @@ button:hover {
 	padding: 14px;
 	border: 1px solid var(--line);
 	border-radius: 8px;
-	background: #fbfcfb;
+	background: #fffafd;
 }
 
 .summary-card span {
@@ -224,7 +231,7 @@ button:hover {
 
 .inventory-table th {
 	color: var(--muted);
-	background: #fbfcfb;
+	background: #fff4fa;
 	font-size: 12px;
 	text-transform: uppercase;
 }
@@ -238,11 +245,11 @@ button:hover {
 }
 
 .clickable-row:hover {
-	background: #f7faf8;
+	background: #fff4fa;
 }
 
 .clickable-row:focus {
-	outline: 2px solid rgba(31, 122, 92, 0.2);
+	outline: 2px solid rgba(226, 47, 135, 0.2);
 	outline-offset: -2px;
 }
 
@@ -270,7 +277,7 @@ button:hover {
 .stock-bar {
 	height: 8px;
 	border-radius: 999px;
-	background: #edf2f0;
+	background: #f7d9e8;
 	overflow: hidden;
 }
 
@@ -323,12 +330,159 @@ button:hover {
 .detail-card {
 	border: 1px solid var(--line);
 	border-radius: 8px;
-	background: #fbfcfb;
+	background: #fffafd;
 	padding: 16px;
 }
 
 .detail-summary {
 	margin-bottom: 16px;
+}
+
+.stock-insight {
+	display: grid;
+	grid-template-columns: minmax(280px, 0.78fr) minmax(320px, 1.22fr);
+	gap: 18px;
+	align-items: center;
+	margin-bottom: 16px;
+	padding: 18px;
+	border: 1px solid var(--line);
+	border-radius: 8px;
+	background:
+		linear-gradient(135deg, rgba(255, 224, 239, 0.72), rgba(255, 255, 255, 0.86)),
+		#fffafd;
+}
+
+.stock-insight-main {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	min-width: 0;
+}
+
+.stock-insight-main p:not(.eyebrow) {
+	margin: 8px 0 0;
+	color: var(--muted);
+	line-height: 1.45;
+}
+
+.stock-ring {
+	--ring-color: var(--green);
+	--ring: 50%;
+	width: 116px;
+	aspect-ratio: 1;
+	flex: 0 0 auto;
+	display: grid;
+	place-items: center;
+	border-radius: 50%;
+	background:
+		radial-gradient(circle, #fffafd 58%, transparent 59%),
+		conic-gradient(var(--ring-color) var(--ring), #f6d3e3 0);
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75);
+	text-align: center;
+}
+
+.stock-ring.warning {
+	--ring-color: var(--gold);
+}
+
+.stock-ring.danger {
+	--ring-color: var(--coral);
+}
+
+.stock-ring strong,
+.stock-ring span {
+	grid-area: 1 / 1;
+}
+
+.stock-ring strong {
+	margin-top: -12px;
+	font-size: 28px;
+	line-height: 1;
+}
+
+.stock-ring span {
+	margin-top: 36px;
+	color: var(--muted);
+	font-size: 11px;
+	font-weight: 700;
+}
+
+.stock-chart {
+	min-width: 0;
+}
+
+.stock-chart-track {
+	position: relative;
+	height: 28px;
+	border-radius: 999px;
+	background: #f7d9e8;
+	overflow: visible;
+}
+
+.stock-chart-fill {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--green);
+}
+
+.stock-chart-fill.warning {
+	background: var(--gold);
+}
+
+.stock-chart-fill.danger {
+	background: var(--coral);
+}
+
+.stock-marker {
+	position: absolute;
+	top: -7px;
+	width: 3px;
+	height: 42px;
+	border-radius: 999px;
+	transform: translateX(-50%);
+}
+
+.stock-marker.min {
+	background: var(--ink);
+}
+
+.stock-marker.template {
+	background: var(--green);
+}
+
+.stock-chart-legend {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px 16px;
+	margin-top: 14px;
+	color: var(--muted);
+	font-size: 12px;
+	font-weight: 700;
+}
+
+.stock-chart-legend span {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+}
+
+.stock-chart-legend i {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+}
+
+.legend-current {
+	background: var(--coral);
+}
+
+.legend-min {
+	background: var(--ink);
+}
+
+.legend-template {
+	background: var(--green);
 }
 
 .compact-head {
@@ -382,7 +536,7 @@ textarea {
 input:focus,
 select:focus,
 textarea:focus {
-	outline: 2px solid rgba(31, 122, 92, 0.18);
+	outline: 2px solid rgba(226, 47, 135, 0.18);
 	border-color: var(--green);
 }
 
@@ -397,7 +551,7 @@ textarea:focus {
 	padding: 18px;
 	border-radius: 8px;
 	background: var(--green-soft);
-	border: 1px solid rgba(31, 122, 92, 0.22);
+	border: 1px solid rgba(226, 47, 135, 0.22);
 	display: flex;
 	align-items: flex-start;
 	justify-content: space-between;
@@ -449,7 +603,7 @@ textarea:focus {
 	padding: 13px;
 	border: 1px solid var(--line);
 	border-radius: 8px;
-	background: #fbfcfb;
+	background: #fffafd;
 }
 
 .metric span {
@@ -485,8 +639,8 @@ textarea:focus {
 .chip {
 	padding: 7px 9px;
 	border-radius: 999px;
-	background: #eef3f1;
-	color: #34504a;
+	background: #ffe0ef;
+	color: #9d1f5a;
 	font-size: 12px;
 	font-weight: 700;
 }
@@ -519,6 +673,10 @@ textarea:focus {
 	}
 
 	.detail-layout {
+		grid-template-columns: 1fr;
+	}
+
+	.stock-insight {
 		grid-template-columns: 1fr;
 	}
 }
@@ -594,5 +752,10 @@ textarea:focus {
 
 	#productLabel {
 		text-align: left;
+	}
+
+	.stock-insight-main {
+		align-items: flex-start;
+		flex-direction: column;
 	}
 }

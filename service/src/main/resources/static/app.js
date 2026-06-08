@@ -1,30 +1,8 @@
-const fallbackProducts = [
-	{ productName: "Vitamin C serum", category: "SKINCARE", productType: "TREND", currentStock: 18, minStock: 40, supplier: "Glow Korea", salesTrend: "GROWING" },
-	{ productName: "Repair hair mask", category: "HAIRCARE", productType: "PROFESSIONAL", currentStock: 9, minStock: 25, supplier: "SalonPro", salesTrend: "STABLE" },
-	{ productName: "Matte liquid lipstick", category: "MAKEUP", productType: "MASS", currentStock: 64, minStock: 20, supplier: "Color Lab", salesTrend: "GROWING" },
-	{ productName: "Body shimmer oil", category: "BODYCARE", productType: "STANDARD", currentStock: 132, minStock: 35, supplier: "Summer Care", salesTrend: "DECLINING" },
-	{ productName: "Luxury night cream", category: "SKINCARE", productType: "LUXURY", currentStock: 26, minStock: 18, supplier: "Maison Belle", salesTrend: "STABLE" },
-	{ productName: "Peptide eye cream", category: "SKINCARE", productType: "LUXURY", currentStock: 7, minStock: 12, supplier: "Derma Seoul", salesTrend: "GROWING" },
-	{ productName: "Keratin shampoo", category: "HAIRCARE", productType: "MASS", currentStock: 88, minStock: 30, supplier: "HairLab", salesTrend: "STABLE" },
-	{ productName: "Niacinamide toner", category: "SKINCARE", productType: "TREND", currentStock: 14, minStock: 35, supplier: "Pure K-Beauty", salesTrend: "GROWING" },
-	{ productName: "Aloe body lotion", category: "BODYCARE", productType: "MASS", currentStock: 11, minStock: 18, supplier: "Green Care", salesTrend: "STABLE" },
-	{ productName: "Rose eau de parfum", category: "FRAGRANCE", productType: "LUXURY", currentStock: 42, minStock: 10, supplier: "Maison Fleur", salesTrend: "DECLINING" },
-	{ productName: "Brow styling gel", category: "MAKEUP", productType: "TREND", currentStock: 5, minStock: 22, supplier: "Brow Studio", salesTrend: "GROWING" },
-	{ productName: "Retinol night serum", category: "SKINCARE", productType: "PROFESSIONAL", currentStock: 31, minStock: 16, supplier: "DermaLab Pro", salesTrend: "STABLE" },
-	{ productName: "Hand repair cream", category: "BODYCARE", productType: "STANDARD", currentStock: 74, minStock: 25, supplier: "Daily Care", salesTrend: "DECLINING" },
-	{ productName: "Scalp peeling tonic", category: "HAIRCARE", productType: "TREND", currentStock: 16, minStock: 28, supplier: "Root Science", salesTrend: "GROWING" },
-	{ productName: "Pressed powder compact", category: "MAKEUP", productType: "STANDARD", currentStock: 39, minStock: 15, supplier: "Color Lab", salesTrend: "STABLE" }
-].map((product) => ({
-	...product,
-	salesHistory: buildSalesHistory(product.productName, scenarioFromTrend(product.salesTrend)),
-	...buildCepEvents(product)
-}));
-
-let existingProducts = fallbackProducts;
+let existingProducts = [];
+let productPolicyThresholds = {};
 let selectedProduct = null;
 
 const form = document.querySelector("#requestForm");
-const statusPill = document.querySelector("#apiStatus");
 
 loadInventory();
 bindNavigation();
@@ -41,19 +19,33 @@ form.addEventListener("submit", async (event) => {
 
 async function loadInventory() {
 	try {
-		const response = await fetch("/api/import-assessment/products");
-		if (!response.ok) {
-			throw new Error(`Status ${response.status}`);
+		const [productsResponse, policiesResponse] = await Promise.all([
+			fetch("/api/import-assessment/products"),
+			fetch("/api/import-assessment/policies")
+		]);
+		if (!productsResponse.ok) {
+			throw new Error(`Status ${productsResponse.status}`);
 		}
-		existingProducts = await response.json();
+		existingProducts = await productsResponse.json();
+		if (policiesResponse.ok) {
+			productPolicyThresholds = buildPolicyThresholdMap(await policiesResponse.json());
+		}
 		renderInventory();
 		setStatus("Spremno");
 	} catch (error) {
-		existingProducts = fallbackProducts;
+		existingProducts = [];
+		productPolicyThresholds = {};
 		renderInventory();
 		setStatus("Spremno");
 		console.error(error);
 	}
+}
+
+function buildPolicyThresholdMap(policies) {
+	return (policies || []).reduce((thresholds, policy) => {
+		thresholds[policy.productType] = policy.minStockThreshold;
+		return thresholds;
+	}, {});
 }
 
 function bindNavigation() {
@@ -61,12 +53,6 @@ function bindNavigation() {
 		button.addEventListener("click", () => showView(button.dataset.view));
 	});
 	document.querySelector("#newAssessmentButton").addEventListener("click", () => showView("assessmentView"));
-	document.querySelector("#detailAssessButton").addEventListener("click", () => {
-		if (selectedProduct) {
-			fillAssessmentFromProduct(selectedProduct);
-		}
-		showView("assessmentView");
-	});
 }
 
 function showView(viewId) {
@@ -89,7 +75,7 @@ function renderInventory() {
 	renderSummary([
 		{ label: "Proizvoda u sistemu", value: existingProducts.length },
 		{ label: "Ispod praga", value: lowStockProducts.length },
-		{ label: "Rastuci trend", value: risingProducts.length },
+		{ label: "Rastući trend", value: risingProducts.length },
 		{ label: "Ukupno na zalihama", value: totalStock }
 	]);
 	renderInventoryTable();
@@ -132,7 +118,7 @@ function renderInventoryTable() {
 			<td>${product.productType}</td>
 			<td>
 				<div class="stock-cell">
-					<span>${product.currentStock} / min ${product.minStock}</span>
+					<span>${product.currentStock} na stanju / min ${product.minStock}</span>
 					<div class="stock-bar"><i style="width: ${percent}%"></i></div>
 				</div>
 			</td>
@@ -147,6 +133,7 @@ function openProductDetail(product) {
 	selectedProduct = product;
 	document.querySelector("#detailProductName").textContent = product.productName;
 	renderDetailSummary(product);
+	renderStockInsight(product);
 	renderCepEventSummary(product);
 	clearProductDetailResult();
 	showView("productDetailView");
@@ -155,10 +142,13 @@ function openProductDetail(product) {
 
 function renderDetailSummary(product) {
 	const status = getStockStatus(product);
+	const templateThreshold = productPolicyThresholds[product.productType] ?? "-";
 	const items = [
 		{ label: "Kategorija", value: product.category },
 		{ label: "Tip", value: product.productType },
-		{ label: "Zalihe", value: `${product.currentStock} / min ${product.minStock}` },
+		{ label: "Trenutne zalihe", value: product.currentStock },
+		{ label: "Min proizvoda", value: product.minStock },
+		{ label: "Template prag (CSV)", value: templateThreshold },
 		{ label: "Status", value: status.label }
 	];
 	const summary = document.querySelector("#detailSummary");
@@ -171,14 +161,67 @@ function renderDetailSummary(product) {
 	});
 }
 
+function renderStockInsight(product) {
+	const status = getStockStatus(product);
+	const templateThreshold = Number(productPolicyThresholds[product.productType] ?? 0);
+	const current = Number(product.currentStock || 0);
+	const minStock = Number(product.minStock || 0);
+	const maxValue = Math.max(current, minStock, templateThreshold, 1);
+	const scaleMax = Math.ceil(maxValue * 1.25);
+	const currentPercent = percentOf(current, scaleMax);
+	const minPercent = percentOf(minStock, scaleMax);
+	const templatePercent = percentOf(templateThreshold, scaleMax);
+	const ringPercent = Math.min(Math.round((current / Math.max(minStock, 1)) * 100), 100);
+	const gapToMin = Math.max(minStock - current, 0);
+	const gapToTemplate = Math.max(templateThreshold - current, 0);
+	const insightText = gapToMin > 0
+		? `Ima ${gapToMin} komada ispod minimuma proizvoda.`
+		: "Zalihe su iznad minimuma proizvoda.";
+	const templateText = templateThreshold
+		? (gapToTemplate > 0
+			? `Template prag traži još ${gapToTemplate} komada da bi bio ispunjen minimum za tip ${product.productType}.`
+			: `Template prag za tip ${product.productType} je pokriven.`)
+		: "Template prag nije pronađen za ovaj tip proizvoda.";
+
+	document.querySelector("#stockInsight").innerHTML = `
+		<div class="stock-insight-main">
+			<div class="stock-ring ${status.className}" style="--ring: ${ringPercent}%">
+				<strong>${current}</strong>
+				<span>na stanju</span>
+			</div>
+			<div>
+				<p class="eyebrow">Stanje zaliha</p>
+				<h2>${status.label}</h2>
+				<p>${insightText} ${templateText}</p>
+			</div>
+		</div>
+		<div class="stock-chart" aria-hidden="true">
+			<div class="stock-chart-track">
+				<i class="stock-chart-fill ${status.className}" style="width: ${currentPercent}%"></i>
+				<span class="stock-marker min" style="left: ${minPercent}%"></span>
+				<span class="stock-marker template" style="left: ${templatePercent}%"></span>
+			</div>
+			<div class="stock-chart-legend">
+				<span><i class="legend-current"></i>Trenutno: ${current}</span>
+				<span><i class="legend-min"></i>Min proizvoda: ${minStock}</span>
+				<span><i class="legend-template"></i>Template CSV: ${templateThreshold || "-"}</span>
+			</div>
+		</div>
+	`;
+}
+
+function percentOf(value, maxValue) {
+	return Math.max(0, Math.min((Number(value || 0) / Math.max(maxValue, 1)) * 100, 100));
+}
+
 function clearProductDetailResult() {
 	document.querySelector("#detailAvg7").textContent = "0.00";
 	document.querySelector("#detailAvg30").textContent = "0.00";
 	document.querySelector("#detailStockDays").textContent = "0.00";
 	document.querySelector("#detailTrend").textContent = "-";
-	renderList("#detailRecommendations", ["Racunanje trenda na osnovu postojece istorije prodaje."]);
+	renderList("#detailRecommendations", ["Računanje trenda na osnovu postojeće istorije prodaje."]);
 	renderList("#detailRules", []);
-	renderList("#cepRecommendations", ["CEP analiza se racuna na osnovu dogadjaja proizvoda."]);
+	renderList("#cepRecommendations", ["CEP analiza se računa na osnovu događaja proizvoda."]);
 	renderList("#cepRules", []);
 }
 
@@ -191,7 +234,7 @@ async function runProductAnalysis() {
 		const response = await fetch("/api/import-assessment/explain", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(buildProductAssessmentRequest(selectedProduct))
+			body: JSON.stringify(await buildProductAssessmentRequest(selectedProduct))
 		});
 		if (!response.ok) {
 			throw new Error(`Status ${response.status}`);
@@ -200,7 +243,7 @@ async function runProductAnalysis() {
 		renderProductDetailAssessment(data);
 		setStatus("Spremno");
 	} catch (error) {
-		setStatus("Greska");
+		setStatus("Greška");
 		alert(error.message);
 		console.error(error);
 	}
@@ -217,15 +260,15 @@ function renderProductDetailAssessment(data) {
 		item.includes("Prodaja") ||
 		item.includes("zaliha") ||
 		item.includes("Zalihe") ||
-		item.includes("narucivanje") ||
-		item.includes("narudzbinu")
+		item.includes("naručivanje") ||
+		item.includes("narudžbinu")
 	);
 	const accumulateRules = (data.activatedRules || []).filter((rule) =>
-		rule.includes("prosecnu prodaju") ||
+		rule.includes("prosečnu prodaju") ||
 		rule.includes("trend prodaje") ||
 		rule.includes("zaliha") ||
-		rule.includes("narucivanje") ||
-		rule.includes("narudzbinu")
+		rule.includes("naručivanje") ||
+		rule.includes("narudžbinu")
 	);
 	renderList("#detailRecommendations", accumulateRecommendations);
 	renderList("#detailRules", accumulateRules);
@@ -233,8 +276,8 @@ function renderProductDetailAssessment(data) {
 	const cepRecommendations = (data.recommendations || []).filter((item) =>
 		item.includes("poslednjih sat vremena") ||
 		item.includes("poslednja 24 sata") ||
-		item.includes("nestasice") ||
-		item.includes("Zalihe su povecane")
+		item.includes("nestašice") ||
+		item.includes("Zalihe su povećane")
 	);
 	const cepRules = (data.activatedRules || []).filter((rule) => rule.startsWith("CEP "));
 	document.querySelector("#cepStatus").textContent = cepRules.length ? "Upozorenje" : "Bez alarma";
@@ -251,13 +294,13 @@ function renderCepEventSummary(product) {
 
 function getStockStatus(product) {
 	if (product.currentStock <= product.minStock) {
-		return { label: "Naruciti", className: "danger" };
+		return { label: "Naručiti", className: "danger" };
 	}
 	if (product.currentStock <= product.minStock * 1.5) {
 		return { label: "Pratiti", className: "warning" };
 	}
 	if (product.salesTrend === "DECLINING") {
-		return { label: "Visak rizik", className: "warning" };
+		return { label: "Višak rizik", className: "warning" };
 	}
 	return { label: "Dovoljno", className: "ok" };
 }
@@ -291,88 +334,19 @@ function readForm() {
 	return data;
 }
 
-function buildSalesHistory(productName, scenario) {
-	const quantitiesByScenario = {
-		growing: [
-			[1, 10],
-			[2, 9],
-			[3, 10],
-			[4, 8],
-			[5, 9],
-			[6, 10],
-			[7, 9],
-			[10, 3],
-			[15, 3],
-			[20, 4],
-			[25, 3],
-			[30, 4]
-		],
-		declining: [
-			[1, 1],
-			[2, 1],
-			[3, 2],
-			[4, 1],
-			[5, 1],
-			[6, 2],
-			[7, 1],
-			[10, 8],
-			[15, 9],
-			[20, 8],
-			[25, 9],
-			[30, 8]
-		],
-		stable: [
-			[1, 5],
-			[2, 4],
-			[3, 5],
-			[4, 4],
-			[5, 5],
-			[6, 4],
-			[7, 5],
-			[10, 4],
-			[15, 5],
-			[20, 4],
-			[25, 5],
-			[30, 4]
-		]
-	};
-	return (quantitiesByScenario[scenario] || []).map(([daysAgo, quantity]) => ({
-		productName,
-		daysAgo,
-		quantity
-	}));
-}
-
-function buildProductAssessmentRequest(product) {
-	const demandByTrend = {
-		GROWING: 9,
-		STABLE: 6,
-		DECLINING: 4
-	};
-	const monthlyDemandByTrend = {
-		GROWING: 120,
-		DECLINING: 45,
-		STABLE: 80
-	};
+async function buildProductAssessmentRequest(product) {
+	const response = await fetch("/api/import-assessment/demo-request/approved");
+	if (!response.ok) {
+		throw new Error(`Status ${response.status}`);
+	}
+	const defaults = await response.json();
 	return {
+		...defaults,
 		productName: product.productName,
 		category: product.category,
 		productType: product.productType,
-		countryOfOrigin: "South Korea",
-		purchasePrice: 8.2,
-		transportRate: 0.06,
-		customsRate: 0.1,
-		vatRate: 0.2,
-		expectedSellingPrice: 19.9,
-		competitorMinPrice: 18,
-		competitorMaxPrice: 24,
-		demandScore: demandByTrend[product.salesTrend] || 6,
-		monthlyDemand: monthlyDemandByTrend[product.salesTrend] || 80,
 		currentStock: product.currentStock,
 		minStock: product.minStock,
-		shelfLifeMonths: 18,
-		deliveryTimeDays: 14,
-		supplierReliability: 0.92,
 		salesHistory: product.salesHistory || [],
 		salesEvents: product.salesEvents || [],
 		stockEvents: product.stockEvents || [],
@@ -380,54 +354,14 @@ function buildProductAssessmentRequest(product) {
 	};
 }
 
-function fillAssessmentFromProduct(product) {
-	const values = buildProductAssessmentRequest(product);
+async function fillAssessmentFromProduct(product) {
+	const values = await buildProductAssessmentRequest(product);
 	Object.entries(values).forEach(([name, value]) => {
 		const field = form.elements[name];
 		if (field && !Array.isArray(value) && typeof value !== "object") {
 			field.value = value;
 		}
 	});
-}
-
-function scenarioFromTrend(trend) {
-	const scenarios = {
-		GROWING: "growing",
-		DECLINING: "declining",
-		STABLE: "stable"
-	};
-	return scenarios[trend] || "stable";
-}
-
-function buildCepEvents(product) {
-	if (product.salesTrend === "GROWING") {
-		return {
-			salesEvents: [
-				{ productName: product.productName, minutesAgo: 10, quantity: 4 },
-				{ productName: product.productName, minutesAgo: 25, quantity: 3 },
-				{ productName: product.productName, minutesAgo: 45, quantity: 5 }
-			],
-			stockEvents: [
-				{ productName: product.productName, minutesAgo: 20, quantityBefore: product.currentStock + 12, quantityAfter: product.currentStock },
-				{ productName: product.productName, minutesAgo: 50, quantityBefore: product.currentStock + 18, quantityAfter: product.currentStock + 8 }
-			],
-			shipmentEvents: []
-		};
-	}
-	if (product.salesTrend === "DECLINING") {
-		return {
-			salesEvents: [],
-			stockEvents: [
-				{ productName: product.productName, minutesAgo: 90, quantityBefore: product.currentStock - 20, quantityAfter: product.currentStock }
-			],
-			shipmentEvents: [{ productName: product.productName, minutesAgo: 120, quantity: 40 }]
-		};
-	}
-	return {
-		salesEvents: [{ productName: product.productName, minutesAgo: 35, quantity: 2 }],
-		stockEvents: [{ productName: product.productName, minutesAgo: 80, quantityBefore: product.currentStock + 2, quantityAfter: product.currentStock }],
-		shipmentEvents: []
-	};
 }
 
 async function explainCurrentForm() {
@@ -445,7 +379,7 @@ async function explainCurrentForm() {
 		renderAssessment(data);
 		setStatus("Spremno");
 	} catch (error) {
-		setStatus("Greska");
+		setStatus("Greška");
 		alert(error.message);
 		console.error(error);
 	}
@@ -534,7 +468,7 @@ function formatTrend(trend) {
 }
 
 function setStatus(text) {
-	statusPill.textContent = text;
+	void text;
 }
 
 function fillFormFromQueryParams() {
@@ -550,3 +484,4 @@ function fillFormFromQueryParams() {
 	}
 	showView("assessmentView");
 }
+

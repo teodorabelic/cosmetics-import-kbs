@@ -19,15 +19,15 @@ query FactorLeadsToImport(String $productName, String $factorCode, String $targe
 	RecommendationLink(fromCode == $factorCode, toCode == $targetCode)
 	RecommendationFactor(productName == $productName, code == $targetCode)
 	or
-	// 2. postoji veza faktor -> sledeci faktor -> ... -> cilj
+	// 2. postoji veza faktor -> sledeći faktor -> ... -> cilj
 	( RecommendationLink(fromCode == $factorCode, $nextCode : toCode)
 		and RecommendationFactor(productName == $productName, code == $nextCode)
 		and FactorLeadsToImport($productName, $nextCode, $targetCode;) )
 end
 
-// pocetni faktori ---------------------------------------------------------------
+// početni faktori ---------------------------------------------------------------
 
-rule "Faktor visoka potraznja"
+rule "Faktor visoka potražnja"
 	salience 92
 	no-loop true
 when
@@ -38,7 +38,7 @@ then
 	insert(new RecommendationFactor($productName, "HighDemand"));
 end
 
-rule "Faktor prihvatljiv ukupni trosak"
+rule "Faktor prihvatljiv ukupni trošak"
 	salience 92
 	no-loop true
 when
@@ -59,7 +59,7 @@ then
 	insert(new RecommendationFactor($productName, "CompetitiveD2CPrice"));
 end
 
-rule "Faktor pozitivan ocekivani profit"
+rule "Faktor pozitivan očekivani profit"
 	salience 92
 	no-loop true
 when
@@ -69,9 +69,9 @@ then
 	insert(new RecommendationFactor($productName, "PositiveExpectedProfit"));
 end
 
-// medjufaktori -----------------------------------------------------------------------
+// međufaktori -----------------------------------------------------------------------
 
-rule "Izvedi potencijal potraznje"
+rule "Izvedi potencijal potražnje"
 	salience 91
 	no-loop true
 when
@@ -83,7 +83,7 @@ then
 	insert(new RecommendationFactor($productName, "DemandPotential"));
 end
 
-rule "Izvedi prihvatljiv trosak"
+rule "Izvedi prihvatljiv trošak"
 	salience 91
 	no-loop true
 when
@@ -94,7 +94,7 @@ then
 	insert(new RecommendationFactor($productName, "CostAcceptable"));
 end
 
-rule "Izvedi sansu za uvoz iz kompletnih faktora"
+rule "Izvedi šansu za uvoz iz kompletnih faktora"
 	salience 91
 	no-loop true
 when
@@ -123,7 +123,7 @@ then
 	insert(new RecommendationFactor($productName, "ImportRecommended"));
 end
 
-// celokupna poruka kada je preporucen uvoz
+// celokupna poruka kada je preporučen uvoz
 rule "Objasni lanac preporuke za uvoz"
 	salience 88
 	no-loop true
@@ -131,10 +131,12 @@ when
 	RecommendationFactor($productName : productName, code == "ImportRecommended")
 	$assessment : ImportAssessment(productName == $productName,
 		decision != ImportDecision.REJECT,
-		!hasRecommendation("Backward query ImportRecommended je potvrden kroz lanac faktora."))
+		!hasRecommendation("Backward query ImportRecommended je potvrđen kroz lanac faktora."))
 then
 	modify($assessment) {
-		addRecommendation("Backward query ImportRecommended je potvrden kroz lanac faktora."),
+		addRecommendation("Backward query ImportRecommended je potvrđen kroz lanac faktora."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
+
+

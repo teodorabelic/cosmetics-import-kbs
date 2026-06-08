@@ -1,0 +1,127 @@
+{
+  "approved": {
+    "productName": "Vitamin C serum",
+    "category": "SKINCARE",
+    "productType": "TREND",
+    "countryOfOrigin": "South Korea",
+    "purchasePrice": 8.2,
+    "shippingCost": 1.4,
+    "customsRate": 0.1,
+    "vatRate": 0.2,
+    "expectedSellingPrice": 19.9,
+    "competitorMinPrice": 16.5,
+    "competitorMaxPrice": 24.0,
+    "monthlyDemand": 120,
+    "currentStock": 18,
+    "minStock": 40,
+    "shelfLifeMonths": 18,
+    "deliveryTimeDays": 14,
+    "supplierReliability": 0.92,
+    "salesHistory": [
+      { "productName": "Vitamin C serum", "daysAgo": 1, "quantity": 9 },
+      { "productName": "Vitamin C serum", "daysAgo": 2, "quantity": 8 },
+      { "productName": "Vitamin C serum", "daysAgo": 3, "quantity": 7 },
+      { "productName": "Vitamin C serum", "daysAgo": 10, "quantity": 4 },
+      { "productName": "Vitamin C serum", "daysAgo": 20, "quantity": 3 }
+    ],
+    "salesEvents": [
+      { "productName": "Vitamin C serum", "minutesAgo": 10, "quantity": 4 },
+      { "productName": "Vitamin C serum", "minutesAgo": 25, "quantity": 3 },
+      { "productName": "Vitamin C serum", "minutesAgo": 50, "quantity": 3 }
+    ],
+    "stockEvents": [
+      { "productName": "Vitamin C serum", "minutesAgo": 20, "quantityBefore": 30, "quantityAfter": 18 }
+    ],
+    "shipmentEvents": []
+  },
+  "rejected-price": {
+    "productName": "Luxury night cream",
+    "category": "SKINCARE",
+    "productType": "LUXURY",
+    "countryOfOrigin": "Japan",
+    "purchasePrice": 28.0,
+    "shippingCost": 5.0,
+    "customsRate": 0.12,
+    "vatRate": 0.2,
+    "expectedSellingPrice": 62.0,
+    "competitorMinPrice": 35.0,
+    "competitorMaxPrice": 42.0,
+    "monthlyDemand": 95,
+    "currentStock": 30,
+    "minStock": 20,
+    "shelfLifeMonths": 24,
+    "deliveryTimeDays": 14,
+    "supplierReliability": 0.9,
+    "salesHistory": [
+      { "productName": "Luxury night cream", "daysAgo": 1, "quantity": 4 },
+      { "productName": "Luxury night cream", "daysAgo": 2, "quantity": 5 },
+      { "productName": "Luxury night cream", "daysAgo": 14, "quantity": 4 }
+    ],
+    "salesEvents": [],
+    "stockEvents": [],
+    "shipmentEvents": [
+      { "productName": "Luxury night cream", "minutesAgo": 120, "quantity": 60 }
+    ]
+  },
+  "rejected-supplier": {
+    "productName": "Matte lipstick",
+    "category": "MAKEUP",
+    "productType": "MASS",
+    "countryOfOrigin": "Turkey",
+    "purchasePrice": 3.2,
+    "shippingCost": 0.6,
+    "customsRate": 0.05,
+    "vatRate": 0.2,
+    "expectedSellingPrice": 8.5,
+    "competitorMinPrice": 7.5,
+    "competitorMaxPrice": 11.0,
+    "monthlyDemand": 110,
+    "currentStock": 22,
+    "minStock": 20,
+    "shelfLifeMonths": 18,
+    "deliveryTimeDays": 14,
+    "supplierReliability": 0.45,
+    "salesHistory": [
+      { "productName": "Matte lipstick", "daysAgo": 1, "quantity": 6 },
+      { "productName": "Matte lipstick", "daysAgo": 2, "quantity": 7 },
+      { "productName": "Matte lipstick", "daysAgo": 20, "quantity": 6 }
+    ],
+    "salesEvents": [
+      { "productName": "Matte lipstick", "minutesAgo": 30, "quantity": 5 }
+    ],
+    "stockEvents": [],
+    "shipmentEvents": []
+  },
+  "declining-sales": {
+    "productName": "Body shimmer oil",
+    "category": "BODYCARE",
+    "productType": "STANDARD",
+    "countryOfOrigin": "France",
+    "purchasePrice": 6.5,
+    "shippingCost": 1.0,
+    "customsRate": 0.0,
+    "vatRate": 0.2,
+    "expectedSellingPrice": 18.0,
+    "competitorMinPrice": 16.0,
+    "competitorMaxPrice": 24.0,
+    "monthlyDemand": 30,
+    "currentStock": 140,
+    "minStock": 35,
+    "shelfLifeMonths": 18,
+    "deliveryTimeDays": 14,
+    "supplierReliability": 0.88,
+    "salesHistory": [
+      { "productName": "Body shimmer oil", "daysAgo": 1, "quantity": 1 },
+      { "productName": "Body shimmer oil", "daysAgo": 2, "quantity": 1 },
+      { "productName": "Body shimmer oil", "daysAgo": 3, "quantity": 2 },
+      { "productName": "Body shimmer oil", "daysAgo": 12, "quantity": 8 },
+      { "productName": "Body shimmer oil", "daysAgo": 20, "quantity": 9 },
+      { "productName": "Body shimmer oil", "daysAgo": 28, "quantity": 7 }
+    ],
+    "salesEvents": [],
+    "stockEvents": [],
+    "shipmentEvents": [
+      { "productName": "Body shimmer oil", "minutesAgo": 180, "quantity": 80 }
+    ]
+  }
+}

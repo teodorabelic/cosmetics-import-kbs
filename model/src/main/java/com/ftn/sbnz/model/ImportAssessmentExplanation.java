@@ -30,7 +30,7 @@ public class ImportAssessmentExplanation {
 		ImportAssessment assessment = queryResult.getAssessment();
 		this.decision = assessment.getDecision();
 		this.riskLevel = assessment.getRiskLevel();
-		this.mainReason = assessment.getRecommendations().isEmpty() ? "Nema dodatnog objasnjenja."
+		this.mainReason = assessment.getRecommendations().isEmpty() ? "Nema dodatnog objašnjenja."
 				: assessment.getRecommendations().get(0);
 		this.landedCost = assessment.getLandedCost();
 		this.recommendedB2BPrice = assessment.getRecommendedB2BPrice();
@@ -184,3 +184,4 @@ public class ImportAssessmentExplanation {
 		this.recommendations = recommendations;
 	}
 }
+

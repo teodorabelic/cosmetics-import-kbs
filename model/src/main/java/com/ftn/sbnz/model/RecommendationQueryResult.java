@@ -23,28 +23,28 @@ public class RecommendationQueryResult {
 	private List<String> buildExplanation(boolean importRecommended, List<String> factors) {
 		List<String> result = new ArrayList<>();
 		if (importRecommended) {
-			result.add("Hipoteza ImportRecommended je potvrdena.");
+			result.add("Hipoteza ImportRecommended je potvrđena.");
 		} else {
-			result.add("Hipoteza ImportRecommended nije potvrdena.");
+			result.add("Hipoteza ImportRecommended nije potvrđena.");
 		}
 		if (factors.contains("HighDemand")) {
-			result.add("Potraznja je visoka.");
+			result.add("Potražnja je visoka.");
 		}
 		if (factors.contains("AcceptableTotalCost")) {
-			result.add("Ukupni trosak je prihvatljiv.");
+			result.add("Ukupni trošak je prihvatljiv.");
 		}
 		if (factors.contains("CompetitiveD2CPrice")) {
 			result.add("D2C cena je konkurentna.");
 		}
 		if (factors.contains("PositiveExpectedProfit")) {
-			result.add("Ocekivani profit je pozitivan.");
+			result.add("Očekivani profit je pozitivan.");
 		}
 		if (!importRecommended) {
 			if (!factors.contains("HighDemand")) {
-				result.add("Lanac potraznje je prekinut: nedostaje faktor HighDemand.");
+				result.add("Lanac potražnje je prekinut: nedostaje faktor HighDemand.");
 			}
 			if (!factors.contains("AcceptableTotalCost")) {
-				result.add("Lanac troskova je prekinut: nedostaje faktor AcceptableTotalCost.");
+				result.add("Lanac troškova je prekinut: nedostaje faktor AcceptableTotalCost.");
 			}
 			if (!factors.contains("CompetitiveD2CPrice")) {
 				result.add("Lanac konkurentnosti je prekinut: nedostaje faktor CompetitiveD2CPrice.");
@@ -89,3 +89,4 @@ public class RecommendationQueryResult {
 		this.explanation = explanation;
 	}
 }
+

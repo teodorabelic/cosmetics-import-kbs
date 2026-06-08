@@ -39,16 +39,17 @@ class ServiceApplicationTests {
 
 	@Test
 	void recommendationQueryConfirmsDemoImport() {
-		RecommendationQueryResult result = assessmentService.checkImportRecommendation(ImportRequest.demo());
+		RecommendationQueryResult result = assessmentService
+				.checkImportRecommendation(assessmentService.getDemoRequest("approved"));
 
 		assertThat(result.isImportRecommended()).isTrue();
 		assertThat(result.getFactors()).contains("HighDemand", "ImportRecommended");
-		assertThat(result.getExplanation()).contains("Hipoteza ImportRecommended je potvrdena.");
+		assertThat(result.getExplanation()).contains("Hipoteza ImportRecommended je potvrđena.");
 	}
 
 	@Test
 	void approvedDemoIsApproved() {
-		ImportAssessment assessment = assessmentService.evaluate(ImportRequest.approvedDemo());
+		ImportAssessment assessment = assessmentService.evaluate(assessmentService.getDemoRequest("approved"));
 
 		assertThat(assessment.getDecision()).isEqualTo(ImportDecision.APPROVE);
 		assertThat(assessment.getRecommendations()).anyMatch(recommendation -> recommendation.contains("Uvoz je isplativ"));
@@ -56,7 +57,7 @@ class ServiceApplicationTests {
 
 	@Test
 	void rejectedPriceDemoIsRejectedAsNotCompetitive() {
-		ImportAssessment assessment = assessmentService.evaluate(ImportRequest.rejectedByPriceDemo());
+		ImportAssessment assessment = assessmentService.evaluate(assessmentService.getDemoRequest("rejected-price"));
 
 		assertThat(assessment.getDecision()).isEqualTo(ImportDecision.REJECT);
 		assertThat(assessment.getRecommendations()).anyMatch(recommendation -> recommendation.contains("nije konkurentan"));
@@ -64,7 +65,7 @@ class ServiceApplicationTests {
 
 	@Test
 	void rejectedNonCompetitiveProductDoesNotConfirmBackwardImportRecommendation() {
-		ImportRequest request = ImportRequest.demo();
+		ImportRequest request = assessmentService.getDemoRequest("approved");
 		request.setDemandScore(1);
 		request.setCompetitorMinPrice(9);
 		request.setCompetitorMaxPrice(10);
@@ -74,51 +75,51 @@ class ServiceApplicationTests {
 		assertThat(result.getAssessment().getDecision()).isEqualTo(ImportDecision.REJECT);
 		assertThat(result.isImportRecommended()).isFalse();
 		assertThat(result.getFactors()).doesNotContain("HighDemand", "CompetitiveD2CPrice", "ImportRecommended");
-		assertThat(result.getExplanation()).contains("Hipoteza ImportRecommended nije potvrdena.",
-				"Lanac potraznje je prekinut: nedostaje faktor HighDemand.",
+		assertThat(result.getExplanation()).contains("Hipoteza ImportRecommended nije potvrđena.",
+				"Lanac potražnje je prekinut: nedostaje faktor HighDemand.",
 				"Lanac konkurentnosti je prekinut: nedostaje faktor CompetitiveD2CPrice.");
 		assertThat(result.getAssessment().getRecommendations())
-				.doesNotContain("Backward query ImportRecommended je potvrden kroz lanac faktora.");
+				.doesNotContain("Backward query ImportRecommended je potvrđen kroz lanac faktora.");
 	}
 
 	@Test
 	void plannedSellingPriceAboveCompetitorsIsRisky() {
-		ImportRequest request = ImportRequest.demo();
+		ImportRequest request = assessmentService.getDemoRequest("approved");
 		request.setExpectedSellingPrice(1000);
 
 		ImportAssessment assessment = assessmentService.evaluate(request);
 
 		assertThat(assessment.getDecision()).isEqualTo(ImportDecision.APPROVE_WITH_CAUTION);
 		assertThat(assessment.getRecommendations())
-				.contains("Planirana prodajna cena je iznad maksimalne konkurentske cene, pa je uvoz rizican dok se cena ne uskladi sa trzistem.");
+				.contains("Planirana prodajna cena je iznad maksimalne konkurentske cene, pa je uvoz rizičan dok se cena ne uskladi sa tržištem.");
 	}
 
 	@Test
 	void rejectedSupplierDemoIsRejectedAsRiskySupplier() {
-		ImportAssessment assessment = assessmentService.evaluate(ImportRequest.rejectedBySupplierDemo());
+		ImportAssessment assessment = assessmentService.evaluate(assessmentService.getDemoRequest("rejected-supplier"));
 
 		assertThat(assessment.getDecision()).isEqualTo(ImportDecision.REJECT);
-		assertThat(assessment.getRecommendations()).contains("Uvoz nije preporucen zbog rizicnog dobavljaca.");
+		assertThat(assessment.getRecommendations()).contains("Uvoz nije preporučen zbog rizičnog dobavljača.");
 	}
 
 	@Test
 	void lowStockDemoTriggersCriticalStockRecommendations() {
-		ImportAssessment assessment = assessmentService.evaluate(ImportRequest.lowStockDemo());
+		ImportAssessment assessment = assessmentService.evaluate(assessmentService.getDemoRequest("low-stock"));
 
-		assertThat(assessment.getRecommendations()).contains("Zalihe su kriticne: potrebno je hitno narucivanje.",
+		assertThat(assessment.getRecommendations()).contains("Zalihe su kritične: potrebno je hitno naručivanje.",
 				"Detektovano je naglo praznjenje zaliha u poslednjih sat vremena.",
-				"Detektovana je ucestala prodaja u poslednjem satu.",
-				"Zalihe su se ucestalo menjale u poslednjem satu.");
+				"Detektovana je učestala prodaja u poslednjem satu.",
+				"Zalihe su se učestalo menjale u poslednjem satu.");
 		assertThat(assessment.getSuggestedOrderQuantity()).isGreaterThan(0);
 	}
 
 	@Test
 	void decliningSalesDemoDetectsDecliningTrendAndReducesOrder() {
-		ImportAssessment assessment = assessmentService.evaluate(ImportRequest.decliningSalesDemo());
+		ImportAssessment assessment = assessmentService.evaluate(assessmentService.getDemoRequest("declining-sales"));
 
 		assertThat(assessment.getSalesTrend()).isEqualTo(SalesTrend.DECLINING);
 		assertThat(assessment.getSuggestedOrderQuantity()).isZero();
-		assertThat(assessment.getRecommendations()).anyMatch(recommendation -> recommendation.contains("Opadajuci trend"));
+		assertThat(assessment.getRecommendations()).anyMatch(recommendation -> recommendation.contains("Opadajući trend"));
 		assertThat(assessment.getRecommendations()).contains("Primljena je nova isporuka, ali nema prodaje u poslednja 24 sata.");
 	}
 
@@ -134,7 +135,7 @@ class ServiceApplicationTests {
 	void explainEndpointReturnsDetailedExplanation() throws Exception {
 		mockMvc.perform(post("/api/import-assessment/explain")
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(ImportRequest.demo())))
+				.content(objectMapper.writeValueAsString(assessmentService.getDemoRequest("approved"))))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.decision").value("APPROVE"))
 				.andExpect(jsonPath("$.importRecommended").value(true))

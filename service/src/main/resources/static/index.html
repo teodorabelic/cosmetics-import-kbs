@@ -4,18 +4,19 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Cosmetics Import KBS</title>
-	<link rel="stylesheet" href="/styles.css?v=20260605-8">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="/styles.css?v=20260609-6">
 </head>
 <body>
 	<header class="topbar">
 		<div>
-			<p class="eyebrow">Magic Beauty KBS</p>
 			<h1>Upravljanje uvozom kozmetike</h1>
 		</div>
 		<nav class="top-actions" aria-label="Navigacija">
 			<button class="nav-button active" type="button" data-view="inventoryView">Zalihe</button>
 			<button class="nav-button" type="button" data-view="assessmentView">Procena uvoza</button>
-			<div class="status-pill" id="apiStatus">Spremno</div>
 		</nav>
 	</header>
 
@@ -24,10 +25,10 @@
 			<section class="inventory-shell">
 				<div class="hero-strip" aria-hidden="true"></div>
 
-				<section class="inventory-panel" aria-label="Postojeci proizvodi">
+				<section class="inventory-panel" aria-label="Postojeći proizvodi">
 					<div class="section-head">
 						<div>
-							<p class="eyebrow">Postojeci proizvodi</p>
+							<p class="eyebrow">Postojeći proizvodi</p>
 							<h2>Praćenje zaliha</h2>
 						</div>
 						<button id="newAssessmentButton" type="button">Proceni novi proizvod</button>
@@ -59,16 +60,16 @@
 				<section class="inventory-panel" aria-label="Detalj proizvoda">
 					<div class="section-head">
 						<div>
-							<p class="eyebrow">Postojeci proizvod</p>
+							<p class="eyebrow">Postojeći proizvod</p>
 							<h2 id="detailProductName">Proizvod</h2>
 						</div>
 						<div class="button-row">
 							<button class="secondary-button" type="button" data-view="inventoryView">Nazad</button>
-							<button id="detailAssessButton" type="button">Proceni kao novi uvoz</button>
 						</div>
 					</div>
 
 					<div class="summary-grid detail-summary" id="detailSummary"></div>
+					<section class="stock-insight" id="stockInsight" aria-label="Grafički prikaz zaliha"></section>
 
 					<div class="detail-layout">
 						<section class="detail-card" aria-label="Accumulate demonstracija">
@@ -99,11 +100,11 @@
 					</div>
 
 					<div class="detail-layout cep-layout">
-						<section class="detail-card" aria-label="CEP dogadjaji">
+						<section class="detail-card" aria-label="CEP događaji">
 							<div class="section-head compact-head">
 								<div>
 									<p class="eyebrow">CEP</p>
-									<h2>Dogadjaji kroz vreme</h2>
+									<h2>Događaji kroz vreme</h2>
 								</div>
 							</div>
 							<div class="metric-grid accumulate-grid">
@@ -272,6 +273,7 @@
 		</section>
 	</main>
 
-	<script src="/app.js?v=20260605-8"></script>
+	<script src="/app.js?v=20260609-5"></script>
 </body>
 </html>
+

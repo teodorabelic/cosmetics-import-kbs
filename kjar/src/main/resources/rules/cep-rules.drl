@@ -21,7 +21,7 @@ then
 	}
 end
 
-rule "CEP detektuj ucestalu prodaju u poslednjem satu"
+rule "CEP detektuj učestalu prodaju u poslednjem satu"
 	salience 68
 	no-loop true
 when
@@ -36,15 +36,15 @@ when
 		count($s2)
 	)
 	$assessment : ImportAssessment(productName == $productName,
-		!hasRecommendation("Detektovana je ucestala prodaja u poslednjem satu."))
+		!hasRecommendation("Detektovana je učestala prodaja u poslednjem satu."))
 then
 	modify($assessment) {
-		addRecommendation("Detektovana je ucestala prodaja u poslednjem satu."),
+		addRecommendation("Detektovana je učestala prodaja u poslednjem satu."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
 
-rule "CEP upozori na ucestale promene zaliha"
+rule "CEP upozori na učestale promene zaliha"
 	salience 68
 	no-loop true
 when
@@ -59,10 +59,10 @@ when
 		count($c2)
 	)
 	$assessment : ImportAssessment(productName == $productName,
-		!hasRecommendation("Zalihe su se ucestalo menjale u poslednjem satu."))
+		!hasRecommendation("Zalihe su se učestalo menjale u poslednjem satu."))
 then
 	modify($assessment) {
-		addRecommendation("Zalihe su se ucestalo menjale u poslednjem satu."),
+		addRecommendation("Zalihe su se učestalo menjale u poslednjem satu."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
@@ -83,7 +83,7 @@ then
 	}
 end
 
-rule "CEP rizik od nestasice proizvoda"
+rule "CEP rizik od nestašice proizvoda"
 	salience 68
 	no-loop true
 when
@@ -91,15 +91,15 @@ when
 	SalesEvent(productName == $productName) over window:time(1h)
 	StockChangeEvent(productName == $productName, decrease >= 5) over window:time(1h)
 	$assessment : ImportAssessment(productName == $productName,
-		!hasRecommendation("Postoji rizik od nestasice proizvoda zbog niskih zaliha i nedavne prodaje."))
+		!hasRecommendation("Postoji rizik od nestašice proizvoda zbog niskih zaliha i nedavne prodaje."))
 then
 	modify($assessment) {
-		addRecommendation("Postoji rizik od nestasice proizvoda zbog niskih zaliha i nedavne prodaje."),
+		addRecommendation("Postoji rizik od nestašice proizvoda zbog niskih zaliha i nedavne prodaje."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
 
-rule "CEP povecanje zaliha bez prodaje"
+rule "CEP povećanje zaliha bez prodaje"
 	salience 68
 	no-loop true
 when
@@ -107,10 +107,11 @@ when
 	StockChangeEvent(productName == $productName, quantityAfter > quantityBefore) over window:time(24h)
 	not ( SalesEvent(productName == $productName) over window:time(24h) )
 	$assessment : ImportAssessment(productName == $productName,
-		!hasRecommendation("Zalihe su povecane u poslednja 24 sata, ali nema odgovarajuce prodaje."))
+		!hasRecommendation("Zalihe su povećane u poslednja 24 sata, ali nema odgovarajuće prodaje."))
 then
 	modify($assessment) {
-		addRecommendation("Zalihe su povecane u poslednja 24 sata, ali nema odgovarajuce prodaje."),
+		addRecommendation("Zalihe su povećane u poslednja 24 sata, ali nema odgovarajuće prodaje."),
 		addActivatedRule(drools.getRule().getName())
 	}
 end
+

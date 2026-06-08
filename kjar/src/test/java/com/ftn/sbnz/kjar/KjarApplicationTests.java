@@ -26,7 +26,7 @@ class KjarApplicationTests {
 		KieServices kieServices = KieServices.Factory.get();
 		KieFileSystem kieFileSystem = kieServices.newKieFileSystem();
 		for (String ruleResource : RULE_RESOURCES) {
-			kieFileSystem.write(kieServices.getResources().newClassPathResource(ruleResource));
+			kieFileSystem.write(kieServices.getResources().newClassPathResource(ruleResource, StandardCharsets.UTF_8.name()));
 		}
 		kieFileSystem.write("src/main/resources/rules/product-policy-generated.drl", kieServices.getResources()
 				.newByteArrayResource(TemplateRuleGenerator.generateProductPolicyRules().getBytes(StandardCharsets.UTF_8))

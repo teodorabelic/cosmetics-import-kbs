@@ -1,5 +1,7 @@
 package com.ftn.sbnz.kjar;
 
+import com.ftn.sbnz.model.ProductPolicy;
+import com.ftn.sbnz.model.ProductType;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +33,22 @@ public final class TemplateRuleGenerator {
 			return new DataProviderCompiler().compile(dataProvider, template);
 		} catch (IOException exception) {
 			throw new IllegalStateException("Unable to read product policy template resources.", exception);
+		}
+	}
+
+	public static List<ProductPolicy> loadProductPolicies() {
+		try (InputStream data = TemplateRuleGenerator.class.getResourceAsStream(DATA_PATH)) {
+			if (data == null) {
+				throw new IllegalStateException("Product policy data resource is missing.");
+			}
+			List<ProductPolicy> policies = new ArrayList<>();
+			for (String[] row : readCsvRows(data)) {
+				policies.add(new ProductPolicy(ProductType.valueOf(row[0]), Integer.parseInt(row[1]),
+						Double.parseDouble(row[2])));
+			}
+			return policies;
+		} catch (IOException exception) {
+			throw new IllegalStateException("Unable to read product policy data resource.", exception);
 		}
 	}
 

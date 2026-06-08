@@ -46,7 +46,7 @@ public class ServiceApplication {
 				""");
 		// upisivanje fajlova u KieFileSystem
 		for (String ruleResource : RULE_RESOURCES) {
-			kieFileSystem.write(ks.getResources().newClassPathResource(ruleResource));
+			kieFileSystem.write(ks.getResources().newClassPathResource(ruleResource, StandardCharsets.UTF_8.name()));
 		}
 		kieFileSystem.write("src/main/resources/rules/product-policy-generated.drl", ks.getResources()
 				.newByteArrayResource(TemplateRuleGenerator.generateProductPolicyRules().getBytes(StandardCharsets.UTF_8))
