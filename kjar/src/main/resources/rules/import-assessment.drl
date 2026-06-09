@@ -1,0 +1,22 @@
+package rules
+
+import com.ftn.sbnz.model.SalesEvent;
+import com.ftn.sbnz.model.ShipmentReceivedEvent;
+import com.ftn.sbnz.model.StockChangeEvent;
+
+// events
+
+// prodaja
+declare SalesEvent
+	@role(event)
+end
+
+// primljena isporuka 
+declare ShipmentReceivedEvent
+	@role(event)
+end
+
+// promena zaliha 
+declare StockChangeEvent
+	@role(event)
+end

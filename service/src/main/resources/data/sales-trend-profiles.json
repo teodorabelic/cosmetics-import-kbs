@@ -1,0 +1,74 @@
+{
+  "GROWING": {
+    "salesHistory": [
+      { "daysAgo": 1, "quantity": 10 },
+      { "daysAgo": 2, "quantity": 9 },
+      { "daysAgo": 3, "quantity": 10 },
+      { "daysAgo": 4, "quantity": 8 },
+      { "daysAgo": 5, "quantity": 9 },
+      { "daysAgo": 6, "quantity": 10 },
+      { "daysAgo": 7, "quantity": 9 },
+      { "daysAgo": 10, "quantity": 3 },
+      { "daysAgo": 15, "quantity": 3 },
+      { "daysAgo": 20, "quantity": 4 },
+      { "daysAgo": 25, "quantity": 3 },
+      { "daysAgo": 30, "quantity": 4 }
+    ],
+    "salesEvents": [
+      { "minutesAgo": 10, "quantity": 4 },
+      { "minutesAgo": 25, "quantity": 3 },
+      { "minutesAgo": 45, "quantity": 5 }
+    ],
+    "stockEvents": [
+      { "minutesAgo": 20, "quantityBeforeOffset": 12, "quantityAfterOffset": 0 },
+      { "minutesAgo": 50, "quantityBeforeOffset": 18, "quantityAfterOffset": 8 }
+    ],
+    "shipmentEvents": []
+  },
+  "STABLE": {
+    "salesHistory": [
+      { "daysAgo": 1, "quantity": 5 },
+      { "daysAgo": 2, "quantity": 4 },
+      { "daysAgo": 3, "quantity": 5 },
+      { "daysAgo": 4, "quantity": 4 },
+      { "daysAgo": 5, "quantity": 5 },
+      { "daysAgo": 6, "quantity": 4 },
+      { "daysAgo": 7, "quantity": 5 },
+      { "daysAgo": 10, "quantity": 4 },
+      { "daysAgo": 15, "quantity": 5 },
+      { "daysAgo": 20, "quantity": 4 },
+      { "daysAgo": 25, "quantity": 5 },
+      { "daysAgo": 30, "quantity": 4 }
+    ],
+    "salesEvents": [
+      { "minutesAgo": 35, "quantity": 2 }
+    ],
+    "stockEvents": [
+      { "minutesAgo": 80, "quantityBeforeOffset": 2, "quantityAfterOffset": 0 }
+    ],
+    "shipmentEvents": []
+  },
+  "DECLINING": {
+    "salesHistory": [
+      { "daysAgo": 1, "quantity": 1 },
+      { "daysAgo": 2, "quantity": 1 },
+      { "daysAgo": 3, "quantity": 2 },
+      { "daysAgo": 4, "quantity": 1 },
+      { "daysAgo": 5, "quantity": 1 },
+      { "daysAgo": 6, "quantity": 2 },
+      { "daysAgo": 7, "quantity": 1 },
+      { "daysAgo": 10, "quantity": 8 },
+      { "daysAgo": 15, "quantity": 9 },
+      { "daysAgo": 20, "quantity": 8 },
+      { "daysAgo": 25, "quantity": 9 },
+      { "daysAgo": 30, "quantity": 8 }
+    ],
+    "salesEvents": [],
+    "stockEvents": [
+      { "minutesAgo": 90, "quantityBeforeOffset": -20, "quantityAfterOffset": 0 }
+    ],
+    "shipmentEvents": [
+      { "minutesAgo": 120, "quantity": 40 }
+    ]
+  }
+}

@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="sr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Cosmetics Import KBS</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="/styles.css?v=20260609-6">
+</head>
+<body>
+	<header class="topbar">
+		<div>
+			<h1>Upravljanje uvozom kozmetike</h1>
+		</div>
+		<nav class="top-actions" aria-label="Navigacija">
+			<button class="nav-button active" type="button" data-view="inventoryView">Zalihe</button>
+			<button class="nav-button" type="button" data-view="assessmentView">Procena uvoza</button>
+		</nav>
+	</header>
+
+	<main>
+		<section id="inventoryView" class="page-view active">
+			<section class="inventory-shell">
+				<div class="hero-strip" aria-hidden="true"></div>
+
+				<section class="inventory-panel" aria-label="Postojeći proizvodi">
+					<div class="section-head">
+						<div>
+							<p class="eyebrow">Postojeći proizvodi</p>
+							<h2>Praćenje zaliha</h2>
+						</div>
+						<button id="newAssessmentButton" type="button">Proceni novi proizvod</button>
+					</div>
+
+					<div class="summary-grid" id="inventorySummary"></div>
+
+					<div class="table-wrap">
+						<table class="inventory-table">
+							<thead>
+								<tr>
+									<th>Proizvod</th>
+									<th>Kategorija</th>
+									<th>Tip</th>
+									<th>Zalihe</th>
+									<th>Trend</th>
+									<th>Status</th>
+								</tr>
+							</thead>
+							<tbody id="inventoryTableBody"></tbody>
+						</table>
+					</div>
+				</section>
+			</section>
+		</section>
+
+		<section id="productDetailView" class="page-view">
+			<section class="inventory-shell">
+				<section class="inventory-panel" aria-label="Detalj proizvoda">
+					<div class="section-head">
+						<div>
+							<p class="eyebrow">Postojeći proizvod</p>
+							<h2 id="detailProductName">Proizvod</h2>
+						</div>
+						<div class="button-row">
+							<button class="secondary-button" type="button" data-view="inventoryView">Nazad</button>
+						</div>
+					</div>
+
+					<div class="summary-grid detail-summary" id="detailSummary"></div>
+					<section class="stock-insight" id="stockInsight" aria-label="Grafički prikaz zaliha"></section>
+
+					<div class="detail-layout">
+						<section class="detail-card" aria-label="Accumulate demonstracija">
+							<div class="section-head compact-head">
+								<div>
+									<p class="eyebrow">Accumulate</p>
+									<h2>Istorija prodaje</h2>
+								</div>
+							</div>
+							<div class="metric-grid accumulate-grid">
+								<div class="metric"><span>Prosek 7 dana</span><strong id="detailAvg7">0.00</strong></div>
+								<div class="metric"><span>Prosek 30 dana</span><strong id="detailAvg30">0.00</strong></div>
+								<div class="metric"><span>Dani zaliha</span><strong id="detailStockDays">0.00</strong></div>
+								<div class="metric"><span>Trend</span><strong id="detailTrend">-</strong></div>
+							</div>
+						</section>
+
+						<section class="detail-card" aria-label="Rezultat pravila">
+							<div class="result-section no-border">
+								<h2>Preporuke</h2>
+								<ul class="list" id="detailRecommendations"></ul>
+							</div>
+							<div class="result-section">
+								<h2>Aktivirana accumulate pravila</h2>
+								<ul class="list compact" id="detailRules"></ul>
+							</div>
+						</section>
+					</div>
+
+					<div class="detail-layout cep-layout">
+						<section class="detail-card" aria-label="CEP događaji">
+							<div class="section-head compact-head">
+								<div>
+									<p class="eyebrow">CEP</p>
+									<h2>Događaji kroz vreme</h2>
+								</div>
+							</div>
+							<div class="metric-grid accumulate-grid">
+								<div class="metric"><span>Prodaje u 1h</span><strong id="cepSalesCount">0</strong></div>
+								<div class="metric"><span>Promene zaliha</span><strong id="cepStockCount">0</strong></div>
+								<div class="metric"><span>Isporuke</span><strong id="cepShipmentCount">0</strong></div>
+								<div class="metric"><span>Status</span><strong id="cepStatus">-</strong></div>
+							</div>
+						</section>
+
+						<section class="detail-card" aria-label="CEP rezultat">
+							<div class="result-section no-border">
+								<h2>CEP upozorenja</h2>
+								<ul class="list" id="cepRecommendations"></ul>
+							</div>
+							<div class="result-section">
+								<h2>Aktivirana CEP pravila</h2>
+								<ul class="list compact" id="cepRules"></ul>
+							</div>
+						</section>
+					</div>
+				</section>
+			</section>
+		</section>
+
+		<section id="assessmentView" class="page-view">
+			<div class="shell">
+				<section class="workspace">
+					<section class="controls-panel" aria-label="Unos novog proizvoda">
+						<div class="section-head">
+							<div>
+								<p class="eyebrow">Novi proizvod</p>
+								<h2>Procena isplativosti uvoza</h2>
+							</div>
+							<div class="button-row">
+								<button class="secondary-button" type="button" data-view="inventoryView">Nazad</button>
+								<button id="runButton" type="submit" form="requestForm">Proceni</button>
+							</div>
+						</div>
+
+						<form id="requestForm" class="form-grid">
+							<label>
+								<span>Proizvod</span>
+								<input name="productName" required>
+							</label>
+							<label>
+								<span>Kategorija</span>
+								<select name="category">
+									<option>SKINCARE</option>
+									<option>MAKEUP</option>
+									<option>HAIRCARE</option>
+									<option>FRAGRANCE</option>
+									<option>BODYCARE</option>
+								</select>
+							</label>
+							<label>
+								<span>Tip</span>
+								<select name="productType">
+									<option>TREND</option>
+									<option>STANDARD</option>
+									<option>MASS</option>
+									<option>LUXURY</option>
+									<option>PROFESSIONAL</option>
+								</select>
+							</label>
+							<label>
+								<span>Zemlja</span>
+								<input name="countryOfOrigin">
+							</label>
+							<label>
+								<span>Nabavna cena</span>
+								<input name="purchasePrice" type="number" step="0.01" min="0" required>
+							</label>
+							<label>
+								<span>Transport %</span>
+								<input name="transportRate" type="number" step="0.01" min="0" required>
+							</label>
+							<label>
+								<span>Carina %</span>
+								<input name="customsRate" type="number" step="0.01" min="0" required>
+							</label>
+							<label>
+								<span>PDV</span>
+								<input name="vatRate" type="number" step="0.01" min="0" required>
+							</label>
+							<label>
+								<span>Prodajna cena</span>
+								<input name="expectedSellingPrice" type="number" step="0.01" min="0" required>
+							</label>
+							<label>
+								<span>Konkurencija min</span>
+								<input name="competitorMinPrice" type="number" step="0.01">
+							</label>
+							<label>
+								<span>Konkurencija max</span>
+								<input name="competitorMaxPrice" type="number" step="0.01" min="0" required>
+							</label>
+							<label>
+								<span>Potražnja 0-10</span>
+								<input name="demandScore" type="number" step="1" min="0" max="10" required>
+							</label>
+							<label>
+								<span>Mesečna prodaja</span>
+								<input name="monthlyDemand" type="number" step="1" min="0" required>
+							</label>
+							<label>
+								<span>Početne zalihe</span>
+								<input name="currentStock" type="number" step="1" min="0" required>
+							</label>
+							<label>
+								<span>Min. zalihe</span>
+								<input name="minStock" type="number" step="1" min="0" required>
+							</label>
+							<label>
+								<span>Rok trajanja</span>
+								<input name="shelfLifeMonths" type="number" step="1">
+							</label>
+							<label>
+								<span>Vreme isporuke</span>
+								<input name="deliveryTimeDays" type="number" step="1" min="0">
+							</label>
+							<label>
+								<span>Pouzdanost dobavljača</span>
+								<input name="supplierReliability" type="number" step="0.01" min="0" max="1" required>
+							</label>
+						</form>
+					</section>
+				</section>
+
+				<section class="results-panel" aria-label="Rezultat procene">
+					<div class="decision-band" id="decisionBand">
+						<span id="decisionLabel">-</span>
+						<strong id="productLabel">Proizvod</strong>
+					</div>
+
+					<div class="metric-grid">
+						<div class="metric"><span>Ukupni trošak</span><strong id="landedCost">0.00</strong></div>
+						<div class="metric"><span>D2C cena</span><strong id="d2cPrice">0.00</strong></div>
+						<div class="metric"><span>B2B cena</span><strong id="b2bPrice">0.00</strong></div>
+						<div class="metric"><span>Profit</span><strong id="profit">0.00</strong></div>
+						<div class="metric"><span>Rizik</span><strong id="risk">-</strong></div>
+						<div class="metric"><span>Narudžbina</span><strong id="orderQty">0</strong></div>
+					</div>
+
+					<div class="result-section">
+						<h2>Zaključak</h2>
+						<p id="mainReason">-</p>
+					</div>
+
+					<div class="result-section">
+						<h2>Trend i faktori</h2>
+						<div class="chips" id="factorChips"></div>
+					</div>
+
+					<div class="result-section">
+						<h2>Preporuke</h2>
+						<ul class="list" id="recommendations"></ul>
+					</div>
+
+					<div class="result-section rules-section">
+						<h2>Aktivirana pravila</h2>
+						<ul class="list compact" id="rulesList"></ul>
+					</div>
+				</section>
+			</div>
+		</section>
+	</main>
+
+	<script src="/app.js?v=20260609-5"></script>
+</body>
+</html>
+

@@ -1,0 +1,6 @@
+type,minStockThreshold,orderMultiplier
+LUXURY,5,0.8
+MASS,10,1.0
+PROFESSIONAL,8,0.9
+TREND,20,1.4
+STANDARD,10,1.0

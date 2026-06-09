@@ -1,0 +1,33 @@
+// kolone 
+template header
+type
+minStockThreshold
+orderMultiplier
+
+package rules;
+
+import com.ftn.sbnz.model.ImportAssessment;
+import com.ftn.sbnz.model.ImportDecision;
+import com.ftn.sbnz.model.ImportRequest;
+import com.ftn.sbnz.model.ProductType;
+
+template "Product policy threshold"
+
+rule "Template @{type} prag zaliha"
+	salience 67
+	no-loop true
+when
+	$request : ImportRequest($productName : productName, productType == ProductType.@{type},
+		currentStock < @{minStockThreshold})
+	$assessment : ImportAssessment(productName == $productName, decision != ImportDecision.REJECT,
+		!hasRecommendation("Zalihe su ispod template praga za tip proizvoda @{type}."))
+then
+	modify($assessment) {
+		setSuggestedOrderQuantity((int) Math.round($request.calculateUrgentOrderQuantity() * @{orderMultiplier})),
+		addRecommendation("Zalihe su ispod template praga za tip proizvoda @{type}."),
+		addActivatedRule(drools.getRule().getName())
+	}
+end
+
+end template
+

@@ -1,0 +1,192 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class ImportRequest {
+  productName: String
+  category: Category
+  productType: ProductType
+  countryOfOrigin: String
+  purchasePrice: double
+  shippingCost: double
+  transportRate: double
+  customsRate: double
+  vatRate: double
+  expectedSellingPrice: double
+  competitorMinPrice: double
+  competitorMaxPrice: double
+  demandScore: int
+  monthlyDemand: int
+  currentStock: int
+  minStock: int
+  shelfLifeMonths: int
+  deliveryTimeDays: int
+  supplierReliability: double
+  salesHistory: List<SalesRecord>
+  salesEvents: List<SalesEvent>
+  stockEvents: List<StockChangeEvent>
+  shipmentEvents: List<ShipmentReceivedEvent>
+}
+
+class InventoryProduct {
+  productName: String
+  category: Category
+  productType: ProductType
+  currentStock: int
+  minStock: int
+  supplier: String
+  salesTrend: SalesTrend
+  salesHistory: List<SalesRecord>
+  salesEvents: List<SalesEvent>
+  stockEvents: List<StockChangeEvent>
+  shipmentEvents: List<ShipmentReceivedEvent>
+}
+
+class ImportAssessment {
+  productName: String
+  landedCost: double
+  marginPercent: double
+  recommendedB2BPrice: double
+  recommendedD2CPrice: double
+  expectedProfit: double
+  averageDailySales7: double
+  averageDailySales30: double
+  remainingStockDays: double
+  salesTrend: SalesTrend
+  decision: ImportDecision
+  riskLevel: RiskLevel
+  suggestedOrderQuantity: int
+  recommendations: List<String>
+  activatedRules: List<String>
+}
+
+class RecommendationQueryResult {
+  assessment: ImportAssessment
+  importRecommended: boolean
+  factors: List<String>
+  explanation: List<String>
+}
+
+class ImportAssessmentExplanation {
+  decision: ImportDecision
+  riskLevel: RiskLevel
+  mainReason: String
+  landedCost: double
+  recommendedB2BPrice: double
+  recommendedD2CPrice: double
+  expectedProfit: double
+  averageDailySales7: double
+  averageDailySales30: double
+  remainingStockDays: double
+  suggestedOrderQuantity: int
+  salesTrend: SalesTrend
+  importRecommended: boolean
+  factors: List<String>
+  queryExplanation: List<String>
+  activatedRules: List<String>
+  recommendations: List<String>
+}
+
+class ProductPolicy {
+  productType: ProductType
+  minStockThreshold: int
+  orderMultiplier: double
+}
+
+class RecommendationFactor {
+  productName: String
+  code: String
+}
+
+class RecommendationLink {
+  fromCode: String
+  toCode: String
+}
+
+enum Category {
+  SKINCARE
+  MAKEUP
+  HAIRCARE
+  FRAGRANCE
+  BODYCARE
+}
+
+enum ProductType {
+  LUXURY
+  MASS
+  PROFESSIONAL
+  TREND
+  STANDARD
+}
+
+enum SalesTrend {
+  GROWING
+  STABLE
+  DECLINING
+}
+
+enum ImportDecision {
+  APPROVE
+  APPROVE_WITH_CAUTION
+  REJECT
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+class SalesRecord {
+  productName: String
+  daysAgo: int
+  quantity: int
+}
+
+class StockChangeEvent {
+  productName: String
+  minutesAgo: int
+  quantityBefore: int
+  quantityAfter: int
+}
+
+class SalesEvent {
+  productName: String
+  minutesAgo: int
+  quantity: int
+}
+
+class ShipmentReceivedEvent {
+  productName: String
+  minutesAgo: int
+  quantity: int
+}
+
+ImportRequest --> Category
+ImportRequest --> ProductType
+ImportRequest --> SalesRecord
+ImportRequest --> SalesEvent
+ImportRequest --> StockChangeEvent
+ImportRequest --> ShipmentReceivedEvent
+
+InventoryProduct --> Category
+InventoryProduct --> ProductType
+InventoryProduct --> SalesTrend
+InventoryProduct --> SalesRecord
+InventoryProduct --> SalesEvent
+InventoryProduct --> StockChangeEvent
+InventoryProduct --> ShipmentReceivedEvent
+
+ImportAssessment --> ImportDecision
+ImportAssessment --> RiskLevel
+ImportAssessment --> SalesTrend
+
+RecommendationQueryResult --> ImportAssessment
+
+ImportAssessmentExplanation ..> RecommendationQueryResult
+ImportAssessmentExplanation --> ImportDecision
+ImportAssessmentExplanation --> RiskLevel
+ImportAssessmentExplanation --> SalesTrend
+
+ProductPolicy --> ProductType
+
+@enduml

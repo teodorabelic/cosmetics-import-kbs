@@ -1,0 +1,117 @@
+package rules
+
+import com.ftn.sbnz.model.ImportRequest;
+import com.ftn.sbnz.model.ImportAssessment;
+import com.ftn.sbnz.model.SalesEvent;
+import com.ftn.sbnz.model.ShipmentReceivedEvent;
+import com.ftn.sbnz.model.StockChangeEvent;
+
+rule "CEP upozorenje za naglo praznjenje zaliha"
+	salience 68
+	no-loop true
+when
+	$request : ImportRequest($productName : productName)
+	StockChangeEvent(productName == $productName, decrease >= 10) over window:time(1h)
+	$assessment : ImportAssessment(productName == $productName,
+		!hasRecommendation("Detektovano je naglo praznjenje zaliha u poslednjih sat vremena."))
+then
+	modify($assessment) {
+		addRecommendation("Detektovano je naglo praznjenje zaliha u poslednjih sat vremena."),
+		addActivatedRule(drools.getRule().getName())
+	}
+end
+
+rule "CEP detektuj učestalu prodaju u poslednjem satu"
+	salience 68
+	no-loop true
+when
+	$request : ImportRequest($productName : productName)
+	$s1 : SalesEvent(productName == $productName)
+	Number(intValue >= 2) from accumulate(
+		$s2 : SalesEvent(
+			productName == $productName,
+			this != $s1,
+			this after[0s, 1h] $s1
+		),
+		count($s2)
+	)
+	$assessment : ImportAssessment(productName == $productName,
+		!hasRecommendation("Detektovana je učestala prodaja u poslednjem satu."))
+then
+	modify($assessment) {
+		addRecommendation("Detektovana je učestala prodaja u poslednjem satu."),
+		addActivatedRule(drools.getRule().getName())
+	}
+end
+
+rule "CEP upozori na učestale promene zaliha"
+	salience 68
+	no-loop true
+when
+	$request : ImportRequest($productName : productName)
+	$c1 : StockChangeEvent(productName == $productName)
+	Number(intValue >= 2) from accumulate(
+		$c2 : StockChangeEvent(
+			productName == $productName,
+			this != $c1,
+			this after[0s, 1h] $c1
+		),
+		count($c2)
+	)
+	$assessment : ImportAssessment(productName == $productName,
+		!hasRecommendation("Zalihe su se učestalo menjale u poslednjem satu."))
+then
+	modify($assessment) {
+		addRecommendation("Zalihe su se učestalo menjale u poslednjem satu."),
+		addActivatedRule(drools.getRule().getName())
+	}
+end
+
+rule "CEP upozori na isporuku bez prodaje"
+	salience 68
+	no-loop true
+when
+	$request : ImportRequest($productName : productName, currentStock > minStock)
+	ShipmentReceivedEvent(productName == $productName) over window:time(24h)
+	not ( SalesEvent(productName == $productName) over window:time(24h) )
+	$assessment : ImportAssessment(productName == $productName,
+		!hasRecommendation("Primljena je nova isporuka, ali nema prodaje u poslednja 24 sata."))
+then
+	modify($assessment) {
+		addRecommendation("Primljena je nova isporuka, ali nema prodaje u poslednja 24 sata."),
+		addActivatedRule(drools.getRule().getName())
+	}
+end
+
+rule "CEP rizik od nestašice proizvoda"
+	salience 68
+	no-loop true
+when
+	$request : ImportRequest($productName : productName, currentStock <= minStock)
+	SalesEvent(productName == $productName) over window:time(1h)
+	StockChangeEvent(productName == $productName, decrease >= 5) over window:time(1h)
+	$assessment : ImportAssessment(productName == $productName,
+		!hasRecommendation("Postoji rizik od nestašice proizvoda zbog niskih zaliha i nedavne prodaje."))
+then
+	modify($assessment) {
+		addRecommendation("Postoji rizik od nestašice proizvoda zbog niskih zaliha i nedavne prodaje."),
+		addActivatedRule(drools.getRule().getName())
+	}
+end
+
+rule "CEP povećanje zaliha bez prodaje"
+	salience 68
+	no-loop true
+when
+	$request : ImportRequest($productName : productName, currentStock > minStock)
+	StockChangeEvent(productName == $productName, quantityAfter > quantityBefore) over window:time(24h)
+	not ( SalesEvent(productName == $productName) over window:time(24h) )
+	$assessment : ImportAssessment(productName == $productName,
+		!hasRecommendation("Zalihe su povećane u poslednja 24 sata, ali nema odgovarajuće prodaje."))
+then
+	modify($assessment) {
+		addRecommendation("Zalihe su povećane u poslednja 24 sata, ali nema odgovarajuće prodaje."),
+		addActivatedRule(drools.getRule().getName())
+	}
+end
+
