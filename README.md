@@ -117,4 +117,4 @@ cd ..\service
 
 For a detailed description of the system requirements,
 business rules, and reasoning mechanisms, see the
-[Project Specification](docs/project-specification.pdf).
+[Project Specification](docs/Sistem%20baziran%20na%20znanju%20za%20procenu%20isplativosti%20uvoza%2C%20formiranje%20cena%20i%20upravljanje%20zalihama%20kozmetičkih%20proizvoda.pdf).
