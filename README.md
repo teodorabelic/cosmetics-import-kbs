@@ -112,3 +112,9 @@ cd ..\kjar
 cd ..\service
 .\mvnw.cmd test
 ```
+
+## Documentation
+
+For a detailed description of the system requirements,
+business rules, and reasoning mechanisms, see the
+[Project Specification](docs/project-specification.pdf).
