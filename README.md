@@ -1,21 +1,59 @@
 # Cosmetics Import KBS
 
-Sistem baziran na znanju za procenu isplativosti uvoza, formiranje cena i upravljanje zalihama kozmetickih proizvoda.
+A **knowledge-based decision support system** for evaluating the profitability of cosmetic product imports, recommending B2B and D2C prices, assessing business risks, and managing inventory.
 
-## Preduslovi
+Developed as an **independent academic project** using Java, Spring Boot, and Drools, the system applies rule-based reasoning and complex event processing (CEP) to generate explainable business recommendations.
+
+## Key Features
+
+- **Import Profitability Assessment** — Evaluates import costs, expected profitability, market demand, and competitor pricing to recommend whether a product should be imported.
+- **B2B & D2C Pricing** — Calculates recommended wholesale and retail prices based on product costs and predefined pricing rules.
+- **Risk Assessment** — Identifies potential risks related to high costs, low margins, unreliable suppliers, and market competitiveness.
+- **Inventory Management** — Monitors stock levels, estimates replenishment needs, and generates low-stock warnings.
+- **Sales Trend Analysis** — Analyzes historical sales and detects increasing or decreasing demand.
+- **Explainable Decisions** — Provides recommendations, supporting factors, and information about activated business rules.
+
+## Technologies
+
+- **Java 17**
+- **Spring Boot** — REST API and application services
+- **Drools** — Rule engine and knowledge-based reasoning
+- **Maven** — Dependency management and build automation
+- **Postman** — API testing
+
+## Knowledge-Based Reasoning
+
+The system demonstrates several knowledge engineering techniques:
+
+| Technique | Implementation |
+|---|---|
+| Forward Chaining | Multi-step reasoning for import evaluation, pricing, and inventory decisions |
+| Backward Chaining | Queries used to determine whether an import recommendation can be supported |
+| Accumulate | Aggregation of sales data to calculate average sales over different periods |
+| Complex Event Processing (CEP) | Detection of sales trends and stock-related events over time |
+| Rule Templates | Generation of business rules from configurable product policy data |
+
+## Project Structure
+
+```text
+cosmetics-import-kbs/
+├── model/       # Domain models and DTOs
+├── kjar/        # Drools rules, queries, CEP and rule templates
+├── service/     # Spring Boot REST API and KIE integration
+├── docs/        # Project documentation
+└── postman/     # API testing resources
+```
+
+## Getting Started
+
+### Prerequisites
 
 - Java 17
-- Maven Wrapper se koristi kroz `mvnw.cmd`
+- Maven Wrapper (included in the project)
 
-## Struktura Projekta
+### Running the Application
 
-- `model` - domenski model i DTO klase
-- `kjar` - Drools pravila, query-ji, CEP i template resursi
-- `service` - REST API, KIE integracija i demo scenariji
-
-## Pokretanje
-
-Iz root direktorijuma projekta:
+From the project root, execute the following commands in separate steps:
 
 ```powershell
 cd model
@@ -28,88 +66,41 @@ cd ..\service
 .\mvnw.cmd spring-boot:run
 ```
 
-Servis se pokrece na:
+The application runs at:
 
-```text
-http://localhost:8080
-```
+`http://localhost:8080`
 
-## Demo Endpoint-i
+## API Endpoints
 
-```text
-GET  /api/import-assessment/demo
-GET  /api/import-assessment/demo/approved
-GET  /api/import-assessment/demo/rejected-price
-GET  /api/import-assessment/demo/rejected-supplier
-GET  /api/import-assessment/demo/low-stock
-GET  /api/import-assessment/demo/declining-sales
-POST /api/import-assessment/evaluate
-POST /api/import-assessment/recommendation-query
-POST /api/import-assessment/explain
-```
+The REST API provides demonstration scenarios and endpoints for evaluating import decisions.
 
-`/evaluate` vraca procenu uvoza, cene, rizik, kolicinu i objasnjenja.
-`/recommendation-query` dodatno vraca rezultat backward query-ja `ImportRecommended`.
-`/explain` vraca sazet DTO za prezentaciju: odluku, glavni razlog, cene, rizik, faktore, aktivirana pravila i preporuke.
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/import-assessment/demo` | Run a default demonstration |
+| GET | `/api/import-assessment/demo/approved` | Demonstrate an approved import |
+| GET | `/api/import-assessment/demo/rejected-price` | Demonstrate rejection due to pricing |
+| GET | `/api/import-assessment/demo/rejected-supplier` | Demonstrate supplier-related rejection |
+| GET | `/api/import-assessment/demo/low-stock` | Demonstrate low-stock conditions |
+| GET | `/api/import-assessment/demo/declining-sales` | Demonstrate declining sales |
+| POST | `/api/import-assessment/evaluate` | Evaluate a product using supplied business data |
+| POST | `/api/import-assessment/recommendation-query` | Execute a recommendation query |
+| POST | `/api/import-assessment/explain` | Retrieve an explanation of the decision |
 
-## Primer POST Zahteva
+## Example Decision-Making Process
 
-```json
-{
-  "productName": "Vitamin C serum",
-  "category": "SKINCARE",
-  "productType": "TREND",
-  "countryOfOrigin": "South Korea",
-  "purchasePrice": 8.2,
-  "shippingCost": 1.4,
-  "customsRate": 0.1,
-  "vatRate": 0.2,
-  "expectedSellingPrice": 19.9,
-  "competitorMinPrice": 16.5,
-  "competitorMaxPrice": 24.0,
-  "monthlyDemand": 120,
-  "currentStock": 18,
-  "minStock": 40,
-  "shelfLifeMonths": 18,
-  "supplierReliability": 0.92,
-  "salesHistory": [
-    { "productName": "Vitamin C serum", "daysAgo": 1, "quantity": 9 },
-    { "productName": "Vitamin C serum", "daysAgo": 2, "quantity": 8 },
-    { "productName": "Vitamin C serum", "daysAgo": 3, "quantity": 7 },
-    { "productName": "Vitamin C serum", "daysAgo": 10, "quantity": 4 },
-    { "productName": "Vitamin C serum", "daysAgo": 20, "quantity": 3 }
-  ],
-  "salesEvents": [
-    { "productName": "Vitamin C serum", "minutesAgo": 10, "quantity": 4 },
-    { "productName": "Vitamin C serum", "minutesAgo": 25, "quantity": 3 },
-    { "productName": "Vitamin C serum", "minutesAgo": 50, "quantity": 3 }
-  ],
-  "stockEvents": [
-    { "productName": "Vitamin C serum", "minutesAgo": 20, "quantityBefore": 30, "quantityAfter": 18 }
-  ],
-  "shipmentEvents": [
-  ]
-}
-```
+For a cosmetic product, the system:
 
-## Mapiranje Specifikacije Na Implementaciju
+1. Calculates the total import cost based on purchase price, shipping, and customs.
+2. Determines recommended B2B and D2C selling prices.
+3. Compares the recommended retail price with competitor prices.
+4. Evaluates profitability, demand, and business risks.
+5. Generates an import recommendation.
+6. Analyzes sales history and stock levels.
+7. Suggests inventory adjustments and provides an explanation of the decision.
 
-| Zahtev iz specifikacije | Implementacija |
-| --- | --- |
-| Ukupni trosak proizvoda | Pravilo `Izracunavanje ukupne uvozne cene` |
-| B2B i D2C cena | Pravilo `Formiranje preporucenih B2B i D2C cena` |
-| Konkurentski opseg cena | Pravila za povoljnu i nekonkurentnu D2C cenu |
-| Procena isplativosti uvoza | Pravila za approve/caution/reject odluke |
-| Procena rizika | `RiskLevel` i pravila za visok trosak, nisku marzu, dobavljaca i konkurentnost |
-| Upravljanje zalihama | Pravila za niske/kriticne zalihe i kolicinu narudzbine |
-| Accumulate | Pravilo `Izracunaj prosecnu prodaju za 7 i 30 dana` |
-| CEP | `SalesEvent`, `StockChangeEvent`, `ShipmentReceivedEvent`, pseudo-clock i `over window:time(...)` pravila |
-| Trend 7 vs 30 dana | Pravila `Detektuj rastuci/opadajuci/stabilan trend prodaje` |
-| Backward chaining | Rekurzivni query `ImportRecommended` / `FactorLeadsToImport` i endpoint `/recommendation-query` |
-| Template mehanizam | `templates/product-policy.drt`, `product-policy-data.csv` i `TemplateRuleGenerator` koji generise DRL pravila iz CSV podataka |
-| Objasnjenje odluke | `recommendations`, `activatedRules`, `RecommendationQueryResult`, `/explain` |
+## Running Tests
 
-## Provera
+Run tests for each module:
 
 ```powershell
 cd model
